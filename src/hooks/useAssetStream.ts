@@ -19,9 +19,11 @@ const MAX_CANDLES = 320
 // frame. Keeps the signal stable and analysis cheap under a fast trade feed.
 const ANALYZE_THROTTLE_MS = 250
 
-// REST-polling cadence used when no WebSocket can stream a symbol (e.g. a
-// futures-only perp on a network where the futures WS is tarpitted).
-const POLL_MS = 3000
+// REST-polling cadence used ONLY when no WebSocket can stream a symbol (e.g. a
+// network where the futures WS is tarpitted). Kept deliberately slow: the live
+// feed is the WebSocket — this is a degraded fallback, and polling fast here is
+// exactly what gets the IP rate-limited/banned. Candles still close on schedule.
+const POLL_MS = 20000
 
 interface Analysis {
     indicators: Indicators | null

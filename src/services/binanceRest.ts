@@ -1,7 +1,7 @@
 import type { Candle, Interval } from '../types'
 import type { BinanceSource } from './binanceSource'
 import { FUTURES_SOURCE, SOURCE_CHAIN, getPreferredSource, orderedSources } from './binanceSource'
-import { restBlocked, restCooldownMs, noteRestOk, noteRestFail } from './binanceCooldown'
+import { restBlocked, restCooldownMs, noteRestOk, noteRestFail, noteRestBannedUntil, parseBanUntil, throttled } from './binanceCooldown'
 
 type RawKline = [
     number, // open time
@@ -39,25 +39,31 @@ export const fetchKlines = async (
         throw new Error(`Binance cooling down — retry in ${Math.ceil(restCooldownMs() / 1000)}s`)
     }
     const url = `${source.restBase}/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    try {
-        const res = await fetch(url)
-        // 418/429 here would be a real status, but cross-origin bans usually
-        // arrive as a thrown TypeError (handled below).
-        if (res.status === 418 || res.status === 429) {
-            noteRestFail()
-            throw new Error(`Binance rate limit (${res.status}) — backing off`)
+    return throttled(async () => {
+        // Re-check after waiting in the throttle queue — the ban may have landed.
+        if (restBlocked()) {
+            throw new Error(`Binance cooling down — retry in ${Math.ceil(restCooldownMs() / 1000)}s`)
         }
-        if (!res.ok) {
-            throw new Error(`Binance ${source.id} REST error ${res.status} for ${symbol}`)
+        try {
+            const res = await fetch(url)
+            if (!res.ok) {
+                // fapi sends CORS headers, so we can read the ban body and honor
+                // the exact unban time; otherwise fall back to the blind streak.
+                const body = await res.json().catch(() => null)
+                const until = parseBanUntil(body?.msg)
+                if (until) noteRestBannedUntil(until)
+                else if (res.status === 418 || res.status === 429) noteRestFail()
+                throw new Error(body?.msg ?? `Binance ${source.id} REST error ${res.status} for ${symbol}`)
+            }
+            const data: RawKline[] = await res.json()
+            noteRestOk()
+            return data.map(toCandle)
+        } catch (err) {
+            // A CORS-masked ban (spot host) surfaces as TypeError ("Failed to fetch").
+            if (err instanceof TypeError) noteRestFail()
+            throw err
         }
-        const data: RawKline[] = await res.json()
-        noteRestOk()
-        return data.map(toCandle)
-    } catch (err) {
-        // A CORS-masked ban surfaces as TypeError ("Failed to fetch").
-        if (err instanceof TypeError) noteRestFail()
-        throw err
-    }
+    })
 }
 
 /** Fetch klines walking the source chain, so futures-only symbols still resolve. */
