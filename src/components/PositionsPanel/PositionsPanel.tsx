@@ -48,7 +48,12 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
     const now = useNow(800)
     const [showHistory, setShowHistory] = useState(false)
     const [showKeys, setShowKeys] = useState(false)
+    const [tpslMode, setTpslMode] = useState<TpSlMode>(() => (localStorage.getItem('v-bounce-tpsl-mode') === 'usdt' ? 'usdt' : 'price'))
     const [bankroll, setBankroll] = useState(String(startBalance))
+
+    useEffect(() => {
+        localStorage.setItem('v-bounce-tpsl-mode', tpslMode)
+    }, [tpslMode])
     useEffect(() => setBankroll(String(startBalance)), [startBalance])
 
     // ---- demo (paper) auto-close on liq / TP / SL ---------------------------
@@ -222,7 +227,7 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                         <div className='positions-panel__empty'>{t('pt.none')}</div>
                     ) : (
                         liveAccount.positions.map((p) => (
-                            <RealRow key={p.symbol} pos={p} creds={credentials!} onAfter={liveAccount.refresh} t={t} />
+                            <RealRow key={p.symbol} pos={p} creds={credentials!} onAfter={liveAccount.refresh} mode={tpslMode} onModeChange={setTpslMode} t={t} />
                         ))
                     )}
                 </div>
@@ -232,7 +237,7 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                         <div className='positions-panel__empty'>{t('pt.none')}</div>
                     ) : (
                         rows.map((row) => (
-                            <DemoRow key={row.p.id} row={row} now={now} setTpSl={setTpSl} close={close} t={t} />
+                            <DemoRow key={row.p.id} row={row} now={now} setTpSl={setTpSl} close={close} mode={tpslMode} onModeChange={setTpslMode} t={t} />
                         ))
                     )}
                 </div>
@@ -309,37 +314,143 @@ const Est = ({ pnl, margin }: { pnl: number | null; margin: number }) => {
     )
 }
 
+export type TpSlMode = 'price' | 'usdt'
+
+/**
+ * TP/SL editor with a Price ⇄ USDT toggle. In USDT mode the user types the
+ * profit (TP) / loss (SL) they want in USDT and we auto-compute the exit price
+ * (price move × position size). The committed value is always a price, so the
+ * close/guard logic is unchanged. The opposite unit is shown live as a hint.
+ */
+const TpSlEditor = ({
+    entry,
+    qty,
+    long,
+    decimals,
+    margin,
+    initialTp,
+    initialSl,
+    mode,
+    onModeChange,
+    onApply,
+    pnlAt,
+    busy,
+    t
+}: {
+    entry: number
+    qty: number
+    long: boolean
+    decimals?: number
+    margin: number
+    initialTp: number | null
+    initialSl: number | null
+    mode: TpSlMode
+    onModeChange: (m: TpSlMode) => void
+    onApply: (tpPrice: number | null, slPrice: number | null) => void
+    pnlAt: (price: number) => number
+    busy?: boolean
+    t: (k: string, v?: Record<string, string | number>) => string
+}) => {
+    const tpUsdtToPrice = (u: number) => (long ? entry + u / qty : entry - u / qty)
+    const slUsdtToPrice = (u: number) => (long ? entry - u / qty : entry + u / qty)
+    const priceToTpUsdt = (pr: number) => (long ? pr - entry : entry - pr) * qty
+    const priceToSlUsdt = (pr: number) => (long ? entry - pr : pr - entry) * qty
+
+    // Source of truth is always a price; input text is a view in the current unit.
+    const textFor = (pr: number | null, kind: 'tp' | 'sl') => {
+        if (pr == null) return ''
+        if (mode === 'price') return String(Number(pr.toFixed(decimals ?? 6)))
+        const u = kind === 'tp' ? priceToTpUsdt(pr) : priceToSlUsdt(pr)
+        return String(Number(u.toFixed(2)))
+    }
+
+    const [tpPrice, setTpPrice] = useState<number | null>(initialTp)
+    const [slPrice, setSlPrice] = useState<number | null>(initialSl)
+    const [tpText, setTpText] = useState(() => textFor(initialTp, 'tp'))
+    const [slText, setSlText] = useState(() => textFor(initialSl, 'sl'))
+
+    // Re-derive the input text when the unit flips (the price is unchanged).
+    useEffect(() => {
+        setTpText(textFor(tpPrice, 'tp'))
+        setSlText(textFor(slPrice, 'sl'))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [mode])
+
+    const onTp = (v: string) => {
+        setTpText(v)
+        const n = parseNum(v)
+        setTpPrice(n == null ? null : mode === 'usdt' ? tpUsdtToPrice(n) : n)
+    }
+    const onSl = (v: string) => {
+        setSlText(v)
+        const n = parseNum(v)
+        setSlPrice(n == null ? null : mode === 'usdt' ? slUsdtToPrice(n) : n)
+    }
+
+    const hint = (pr: number | null) =>
+        mode === 'usdt' ? (
+            pr == null ? (
+                <span className='positions-panel__est' aria-hidden />
+            ) : (
+                <span className='positions-panel__est is-price'>→ {formatPrice(pr, decimals)}</span>
+            )
+        ) : (
+            <Est pnl={pr == null ? null : pnlAt(pr)} margin={margin} />
+        )
+
+    const ph = mode === 'usdt' ? '$' : '—'
+
+    return (
+        <>
+            <div className='positions-panel__tpslmode'>
+                <button className={mode === 'price' ? 'is-active' : ''} onClick={() => onModeChange('price')}>
+                    {t('pt.byPrice')}
+                </button>
+                <button className={mode === 'usdt' ? 'is-active' : ''} onClick={() => onModeChange('usdt')}>
+                    {t('pt.byUsdt')}
+                </button>
+            </div>
+            <div className='positions-panel__tpsl'>
+                <label>
+                    <span>{t('pt.tp')}</span>
+                    <input type='number' step='any' value={tpText} placeholder={ph} onChange={(e) => onTp(e.target.value)} />
+                </label>
+                <label>
+                    <span>{t('pt.sl')}</span>
+                    <input type='number' step='any' value={slText} placeholder={ph} onChange={(e) => onSl(e.target.value)} />
+                </label>
+                {hint(tpPrice)}
+                {hint(slPrice)}
+                <button className='positions-panel__tpsl-set' onClick={() => onApply(tpPrice, slPrice)} disabled={busy}>
+                    {t('pt.set')}
+                </button>
+            </div>
+        </>
+    )
+}
+
 const DemoRow = ({
     row,
     now,
     setTpSl,
     close,
+    mode,
+    onModeChange,
     t
 }: {
     row: DemoRowData
     now: number
     setTpSl: (id: string, tp: number | null, sl: number | null) => void
     close: (id: string, price: number) => void
+    mode: TpSlMode
+    onModeChange: (m: TpSlMode) => void
     t: (k: string, v?: Record<string, string | number>) => string
 }) => {
     const { lang } = useI18n()
     const { p, price, net, roe, liq, fees, funding } = row
-    const [tp, setTp] = useState(p.tp != null ? String(p.tp) : '')
-    const [sl, setSl] = useState(p.sl != null ? String(p.sl) : '')
 
     const elapsed = now - p.openedAt
     const ago = elapsed < 60_000 ? t('pt.justNow') : t('pt.ago', { d: formatAgo(elapsed) })
-
-    // Commit only when the user clicks Set — typing must never arm the exit, or
-    // a partial value (e.g. "1") would look "hit" and auto-close the position.
-    const applyTpSl = () => setTpSl(p.id, parseNum(tp), parseNum(sl))
-
-    // Estimated net PnL at the entered exit price (fees + funding included, just
-    // like an actual close) so the figure matches what the position would book.
-    const tpPrice = parseNum(tp)
-    const slPrice = parseNum(sl)
-    const tpPnl = tpPrice !== null ? netPnl(p, tpPrice, now) : null
-    const slPnl = slPrice !== null ? netPnl(p, slPrice, now) : null
 
     return (
         <div className='positions-panel__pos'>
@@ -373,21 +484,20 @@ const DemoRow = ({
                 </span>
                 {p.interval && <span className='positions-panel__tf'>{p.interval}</span>}
             </div>
-            <div className='positions-panel__tpsl'>
-                <label>
-                    <span>{t('pt.tp')}</span>
-                    <input type='number' step='any' value={tp} placeholder='—' onChange={(e) => setTp(e.target.value)} />
-                </label>
-                <label>
-                    <span>{t('pt.sl')}</span>
-                    <input type='number' step='any' value={sl} placeholder='—' onChange={(e) => setSl(e.target.value)} />
-                </label>
-                <Est pnl={tpPnl} margin={p.margin} />
-                <Est pnl={slPnl} margin={p.margin} />
-                <button className='positions-panel__tpsl-set' onClick={applyTpSl}>
-                    {t('pt.set')}
-                </button>
-            </div>
+            <TpSlEditor
+                entry={p.entryPrice}
+                qty={p.qty}
+                long={p.side === 'LONG'}
+                decimals={p.decimals}
+                margin={p.margin}
+                initialTp={p.tp}
+                initialSl={p.sl}
+                mode={mode}
+                onModeChange={onModeChange}
+                onApply={(tpP, slP) => setTpSl(p.id, tpP, slP)}
+                pnlAt={(pr) => netPnl(p, pr, now)}
+                t={t}
+            />
         </div>
     )
 }
@@ -463,31 +573,24 @@ const RealRow = ({
     pos,
     creds,
     onAfter,
+    mode,
+    onModeChange,
     t
 }: {
     pos: RealPosition
     creds: Credentials
     onAfter: () => void
+    mode: TpSlMode
+    onModeChange: (m: TpSlMode) => void
     t: (k: string, v?: Record<string, string | number>) => string
 }) => {
     const { push: pushToast } = useToast()
     const local = getLocalTpSl(pos.symbol)
-    const [tp, setTp] = useState(local.tp != null ? String(local.tp) : '')
-    const [sl, setSl] = useState(local.sl != null ? String(local.sl) : '')
     const [busy, setBusy] = useState(false)
     const [askClose, setAskClose] = useState(false)
+    const long = pos.side === 'LONG'
     const margin = (pos.qty * pos.entryPrice) / pos.leverage
     const roe = margin > 0 ? (pos.pnl / margin) * 100 : 0
-
-    // Live PnL estimate at the entered exit price (price move × position size).
-    const long = pos.side === 'LONG'
-    const estAt = (s: string): number | null => {
-        const x = parseNum(s)
-        if (x === null) return null
-        return (long ? x - pos.entryPrice : pos.entryPrice - x) * pos.qty
-    }
-    const tpPnl = estAt(tp)
-    const slPnl = estAt(sl)
 
     const fail = (e: unknown) =>
         pushToast({ variant: 'error', title: t('toast.failedTitle'), message: e instanceof Error ? e.message : String(e) })
@@ -507,8 +610,8 @@ const RealRow = ({
     }
 
     // Store the exit levels locally; the guard market-closes when one is hit.
-    const applyTpSl = () => {
-        setLocalTpSl(pos.symbol, parseNum(tp), parseNum(sl))
+    const applyTpSl = (tpP: number | null, slP: number | null) => {
+        setLocalTpSl(pos.symbol, tpP, slP)
         pushToast({ variant: 'success', title: t('toast.tpslTitle'), message: t('toast.tpslMsg', { sym: pos.base }) })
     }
 
@@ -547,21 +650,20 @@ const RealRow = ({
                     {t('pt.liq')} <b>{pos.liqPrice > 0 ? formatPrice(pos.liqPrice) : '—'}</b>
                 </span>
             </div>
-            <div className='positions-panel__tpsl'>
-                <label>
-                    <span>{t('pt.tp')}</span>
-                    <input type='number' step='any' value={tp} placeholder='—' onChange={(e) => setTp(e.target.value)} />
-                </label>
-                <label>
-                    <span>{t('pt.sl')}</span>
-                    <input type='number' step='any' value={sl} placeholder='—' onChange={(e) => setSl(e.target.value)} />
-                </label>
-                <Est pnl={tpPnl} margin={margin} />
-                <Est pnl={slPnl} margin={margin} />
-                <button className='positions-panel__tpsl-set' onClick={applyTpSl} disabled={busy}>
-                    {t('pt.set')}
-                </button>
-            </div>
+            <TpSlEditor
+                entry={pos.entryPrice}
+                qty={pos.qty}
+                long={long}
+                margin={margin}
+                initialTp={local.tp}
+                initialSl={local.sl}
+                mode={mode}
+                onModeChange={onModeChange}
+                onApply={applyTpSl}
+                pnlAt={(pr) => (long ? pr - pos.entryPrice : pos.entryPrice - pr) * pos.qty}
+                busy={busy}
+                t={t}
+            />
             <p className='positions-panel__tpsl-note'>ⓘ {t('pt.tpslLocal')}</p>
         </div>
     )

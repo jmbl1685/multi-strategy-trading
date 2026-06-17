@@ -202,6 +202,8 @@ export const translations: Record<Lang, Dict> = {
         'pt.opened': 'Opened',
         'pt.ago': '{d} ago',
         'pt.justNow': 'just now',
+        'pt.byPrice': 'Price',
+        'pt.byUsdt': 'USDT P/L',
         // API keys modal
         'keys.title': 'Binance API keys',
         'keys.warning':
@@ -451,6 +453,8 @@ export const translations: Record<Lang, Dict> = {
         'pt.opened': 'Abierta',
         'pt.ago': 'hace {d}',
         'pt.justNow': 'recién',
+        'pt.byPrice': 'Precio',
+        'pt.byUsdt': 'G/P USDT',
         // API keys modal
         'keys.title': 'Claves API de Binance',
         'keys.warning':
