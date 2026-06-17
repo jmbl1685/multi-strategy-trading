@@ -106,6 +106,10 @@ export const App = () => {
                         </a>
                         <span className='app__credit-note'>Under Juan Batty technical instructions</span>
                     </div>
+                    <span className='app__version' title={`Built ${__BUILD_TIME__}`}>
+                        v{__APP_VERSION__}
+                        {__COMMIT__ ? ` · ${__COMMIT__}` : ''}
+                    </span>
                 </footer>
             </div>
 

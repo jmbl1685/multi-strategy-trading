@@ -68,13 +68,11 @@ Open the **Positions** panel → switch to **Real** → add your Binance Futures
 
 ## ☁️ Deployment
 
-Hosted on **Vercel** via its native Git integration. The **`deploy`** branch is the **production branch**, so pushing to it ships to production (`main` auto‑deploys are disabled in [`vercel.json`](vercel.json)).
+Hosted on **Vercel** via its native Git integration — pushing to **`main`** ships to production.
 
 ```bash
-pnpm run deploy   # force-pushes main → deploy, shipping to production
+pnpm run deploy   # push main → production
 ```
-
-> Set the production branch once in **Vercel → Project → Settings → Git → Production Branch → `deploy`**.
 
 ---
 

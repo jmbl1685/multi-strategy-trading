@@ -8,7 +8,7 @@
         "build": "tsc -b && vite build",
         "preview": "vite preview",
         "lint": "tsc --noEmit",
-        "deploy": "git push origin main:deploy --force"
+        "deploy": "pnpm version patch -m \"[CHORE]: release v%s\" && git push origin main --follow-tags"
     },
     "dependencies": {
         "react": "^18.3.1",
