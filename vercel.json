@@ -4,5 +4,10 @@
     "buildCommand": "pnpm run build",
     "installCommand": "pnpm install --frozen-lockfile",
     "outputDirectory": "dist",
-    "rewrites": [{ "source": "/(.*)", "destination": "/" }]
+    "rewrites": [{ "source": "/(.*)", "destination": "/" }],
+    "git": {
+        "deploymentEnabled": {
+            "main": false
+        }
+    }
 }

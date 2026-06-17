@@ -68,13 +68,13 @@ Open the **Positions** panel → switch to **Real** → add your Binance Futures
 
 ## ☁️ Deployment
 
-Pushes to the **`deploy`** branch ship to **Vercel production** via GitHub Actions ([`.github/workflows/deploy.yml`](.github/workflows/deploy.yml)).
+Hosted on **Vercel** via its native Git integration. The **`deploy`** branch is the **production branch**, so pushing to it ships to production (`main` auto‑deploys are disabled in [`vercel.json`](vercel.json)).
 
 ```bash
-pnpm run deploy   # force-pushes main → deploy, triggering the workflow
+pnpm run deploy   # force-pushes main → deploy, shipping to production
 ```
 
-Set these repository **secrets** (Settings → Secrets and variables → Actions): `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+> Set the production branch once in **Vercel → Project → Settings → Git → Production Branch → `deploy`**.
 
 ---
 
