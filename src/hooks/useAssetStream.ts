@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AssetState, AssetStatus, Candle, Indicators, Interval, Signal } from '../types'
-import { fetchKlines } from '../services/binanceRest'
+import { fetchKlinesVia } from '../services/binanceRest'
 import { fetchPriceDecimals } from '../services/binanceMeta'
 import { MarketStream } from '../services/binanceSocket'
 import {
@@ -158,7 +158,7 @@ export const useAssetStream = (
             stopPolling()
             const poll = async () => {
                 try {
-                    const recent = await fetchKlines(symbol, interval, 3, source)
+                    const recent = await fetchKlinesVia(symbol, interval, 3, source)
                     if (!activeRef.current || recent.length === 0) return
                     for (const c of recent) mergeCandle(candlesRef.current, c)
                     const candles = candlesRef.current
@@ -195,7 +195,7 @@ export const useAssetStream = (
                 }
             })
             try {
-                const history = await fetchKlines(symbol, interval, MAX_CANDLES, source)
+                const history = await fetchKlinesVia(symbol, interval, MAX_CANDLES, source)
                 if (!activeRef.current) return
                 candlesRef.current = history
                 analysisRef.current = runAnalysis(history, paramsRef.current)

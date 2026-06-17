@@ -7,6 +7,8 @@ export interface BinanceSource {
     restBase: string
     /** WebSocket host root; combined streams are built as `<wsHost>/stream?streams=…`. */
     wsHost: string
+    /** WebSocket API endpoint (request/response) — used to seed klines without REST. */
+    wsApiBase: string
 }
 
 // USDT-M futures. Most faithful to a futures system, but its market-data WS is
@@ -15,7 +17,8 @@ export const FUTURES_SOURCE: BinanceSource = {
     id: 'futures',
     label: 'Futures',
     restBase: 'https://fapi.binance.com/fapi/v1',
-    wsHost: 'wss://fstream.binance.com'
+    wsHost: 'wss://fstream.binance.com',
+    wsApiBase: 'wss://ws-fapi.binance.com/ws-fapi/v1'
 }
 
 // Spot. Prices track the perp within a few basis points and the public
@@ -24,7 +27,8 @@ export const SPOT_SOURCE: BinanceSource = {
     id: 'spot',
     label: 'Spot',
     restBase: 'https://api.binance.com/api/v3',
-    wsHost: 'wss://stream.binance.com:9443'
+    wsHost: 'wss://stream.binance.com:9443',
+    wsApiBase: 'wss://ws-api.binance.com/ws-api/v3'
 }
 
 /** Order in which sources are attempted before giving up. */

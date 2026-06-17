@@ -2,6 +2,7 @@ import type { Candle, Interval } from '../types'
 import type { BinanceSource } from './binanceSource'
 import { FUTURES_SOURCE, SOURCE_CHAIN, getPreferredSource, orderedSources } from './binanceSource'
 import { restBlocked, restCooldownMs, noteRestOk, noteRestFail, noteRestBannedUntil, parseBanUntil, throttled } from './binanceCooldown'
+import { fetchKlinesWs } from './binanceWsApi'
 
 type RawKline = [
     number, // open time
@@ -64,6 +65,23 @@ export const fetchKlines = async (
             throw err
         }
     })
+}
+
+/**
+ * Klines for one source, preferring the WebSocket API (no REST weight, dodges IP
+ * bans) and falling back to REST only if the WS API is blocked/unavailable.
+ */
+export const fetchKlinesVia = async (
+    symbol: string,
+    interval: Interval,
+    limit: number,
+    source: BinanceSource = FUTURES_SOURCE
+): Promise<Candle[]> => {
+    try {
+        return await fetchKlinesWs(symbol, interval, limit, source)
+    } catch {
+        return await fetchKlines(symbol, interval, limit, source)
+    }
 }
 
 /** Fetch klines walking the source chain, so futures-only symbols still resolve. */
