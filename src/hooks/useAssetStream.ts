@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AssetState, AssetStatus, Candle, Indicators, Interval, Signal } from '../types'
 import { fetchKlinesVia } from '../services/binanceRest'
+import { fetchKlinesWs } from '../services/binanceWsApi'
 import { fetchPriceDecimals } from '../services/binanceMeta'
 import { MarketStream } from '../services/binanceSocket'
 import {
@@ -152,13 +153,14 @@ export const useAssetStream = (
             })
         }
 
-        // Last resort when no WebSocket can stream the symbol: poll recent klines
-        // over REST (which works even where the WS is tarpitted) for live-ish data.
+        // When the kline *stream* can't reach us, refresh recent candles over the
+        // Binance WebSocket *API* (request/response) — never REST. If the WS API
+        // is unreachable too we simply skip the tick (no REST polling, no bans).
         const startPolling = (source: BinanceSource) => {
             stopPolling()
             const poll = async () => {
                 try {
-                    const recent = await fetchKlinesVia(symbol, interval, 3, source)
+                    const recent = await fetchKlinesWs(symbol, interval, 3, source)
                     if (!activeRef.current || recent.length === 0) return
                     for (const c of recent) mergeCandle(candlesRef.current, c)
                     const candles = candlesRef.current

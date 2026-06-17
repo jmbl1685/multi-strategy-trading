@@ -10,6 +10,10 @@
 # Tooling
 - Package manager is **pnpm**. Always use `pnpm` — never `npm` (or `yarn`). e.g. `pnpm install`, `pnpm add <pkg>`, `pnpm run build`, `pnpm dev`.
 
+# Live market data (REQUIRED)
+- Live price/candle updates MUST come from a **WebSocket** (the `@kline` stream, or the Binance WebSocket API for request/response) — **never** repeated REST polling. REST is allowed only for a one-time historical seed when the WebSocket cannot deliver it.
+- Never add a `setInterval`/loop that calls a REST market-data endpoint (`/klines`, `/ticker`, etc.). Polling REST gets the IP rate-limited and banned (-1003/418).
+
 # Git / Commits
 - Every commit message follows the format `[TYPE]: short imperative description` (e.g. `[FIX]: correct breed parsing`).
 - `TYPE` is UPPERCASE, one of: `ADD`, `FIX`, `UPDATE`, `REMOVE`, `REFACTOR`, `DOCS`, `STYLE`, `TEST`, `CHORE`.
