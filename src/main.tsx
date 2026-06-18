@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from './context/ThemeContext'
 import { TechnicalModeProvider } from './context/TechnicalModeContext'
+import { DisplayCurrencyProvider } from './context/DisplayCurrencyContext'
 import { StrategyProvider } from './context/StrategyContext'
 import { I18nProvider } from './context/I18nContext'
 import { PaperTradingProvider } from './context/PaperTradingContext'
@@ -19,17 +20,19 @@ createRoot(document.getElementById('root')!).render(
         <I18nProvider>
             <ThemeProvider>
                 <TechnicalModeProvider>
-                    <StrategyProvider>
-                        <PaperTradingProvider>
-                            <TradingModeProvider>
-                                <NotificationsProvider>
-                                    <ToastProvider>
-                                        <App />
-                                    </ToastProvider>
-                                </NotificationsProvider>
-                            </TradingModeProvider>
-                        </PaperTradingProvider>
-                    </StrategyProvider>
+                    <DisplayCurrencyProvider>
+                        <StrategyProvider>
+                            <PaperTradingProvider>
+                                <TradingModeProvider>
+                                    <NotificationsProvider>
+                                        <ToastProvider>
+                                            <App />
+                                        </ToastProvider>
+                                    </NotificationsProvider>
+                                </TradingModeProvider>
+                            </PaperTradingProvider>
+                        </StrategyProvider>
+                    </DisplayCurrencyProvider>
                 </TechnicalModeProvider>
             </ThemeProvider>
         </I18nProvider>

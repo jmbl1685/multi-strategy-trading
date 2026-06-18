@@ -12,6 +12,7 @@ import {
 import { useTradingMode } from '../../context/TradingModeContext'
 import { useToast } from '../../context/ToastContext'
 import { useI18n } from '../../context/I18nContext'
+import { useDisplayCurrency } from '../../context/DisplayCurrencyContext'
 import { useNow } from '../../hooks/useNow'
 import { useRealAccount } from '../../hooks/useRealAccount'
 import { getPrice } from '../../services/priceStore'
@@ -34,6 +35,14 @@ const REASON: Record<string, string> = { manual: '', tp: 'TP', sl: 'SL', liq: 'L
 
 const usdt = (v: number) => `${v >= 0 ? '+' : ''}${formatUsd(v, 2)}`
 const pnlCls = (v: number) => (v > 0 ? 'is-pos' : v < 0 ? 'is-neg' : '')
+
+/** Format a USDT money amount in the active display currency (converted + code). */
+const fmtMoney = (vUsdt: number, conv: (v: number) => number, unit: string, signed = false): string => {
+    const c = conv(vUsdt)
+    const digits = unit !== 'USDT' && Math.abs(c) >= 1000 ? 0 : 2
+    const body = formatUsd(c, digits)
+    return signed && vUsdt >= 0 ? `+${body}` : body
+}
 const parseNum = (v: string): number | null => {
     const n = parseFloat(v)
     return Number.isFinite(n) && n > 0 ? n : null
@@ -44,6 +53,8 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
     const { account, positions, closed, defaults, startBalance, close, setTpSl, setDefaults, setStartBalance, reset } =
         usePaperTrading()
     const { mode, credentials, hasCredentials, setMode } = useTradingMode()
+    const ccy = useDisplayCurrency()
+    const m = (v: number, signed = false) => fmtMoney(v, ccy.conv, ccy.unit, signed)
     const real = mode === 'real' && hasCredentials
     const liveAccount = useRealAccount(real, credentials)
     const now = useNow(800)
@@ -137,20 +148,20 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                     <div className='positions-panel__account'>
                         <div className='positions-panel__equity'>
                             <span className='positions-panel__label'>{t('pt.equity')}</span>
-                            <b>{formatUsd(equity, 2)} USDT</b>
+                            <b>{m(equity)} {ccy.unit}</b>
                         </div>
                         <div className='positions-panel__account-grid'>
                             <div>
                                 <span>{t('pt.balance')}</span>
-                                <b>{formatUsd(account.balance, 2)}</b>
+                                <b>{m(account.balance)}</b>
                             </div>
                             <div>
                                 <span>{t('pt.upnl')}</span>
-                                <b className={pnlCls(upnl)}>{usdt(upnl)}</b>
+                                <b className={pnlCls(upnl)}>{m(upnl, true)}</b>
                             </div>
                             <div>
                                 <span>{t('pt.realized')}</span>
-                                <b className={pnlCls(account.realized)}>{usdt(account.realized)}</b>
+                                <b className={pnlCls(account.realized)}>{m(account.realized, true)}</b>
                             </div>
                         </div>
                         <label className='positions-panel__bankroll'>
@@ -173,6 +184,46 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                     </div>
                 </>
             )}
+
+            <div className='positions-panel__currency'>
+                <span className='positions-panel__label'>{t('pt.displayCcy')}</span>
+                <div className='positions-panel__currency-row'>
+                    <input
+                        className='positions-panel__ccy-code'
+                        type='text'
+                        placeholder='COP'
+                        maxLength={5}
+                        value={ccy.code}
+                        onChange={(e) => ccy.setCode(e.target.value)}
+                    />
+                    <label className='positions-panel__ccy-rate'>
+                        <i>1 USDT =</i>
+                        <input
+                            type='number'
+                            min={0}
+                            step={1}
+                            placeholder={t('pt.ccyRate')}
+                            value={ccy.rate || ''}
+                            onChange={(e) => ccy.setRate(parseFloat(e.target.value) || 0)}
+                        />
+                    </label>
+                    <div className='positions-panel__ccy-switch'>
+                        <button
+                            className={!ccy.active ? 'is-active' : ''}
+                            onClick={() => ccy.setActive(false)}
+                        >
+                            USDT
+                        </button>
+                        <button
+                            className={ccy.active ? 'is-active' : ''}
+                            disabled={ccy.code === '' || ccy.rate <= 0}
+                            onClick={() => ccy.setActive(true)}
+                        >
+                            {ccy.code || t('pt.ccyLocal')}
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <div className='positions-panel__defaults'>
                 <span className='positions-panel__label'>{t('pt.defaults')}</span>
@@ -282,7 +333,7 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                                     <span className='positions-panel__closed-sym'>{c.base}</span>
                                     <span className={`positions-panel__closed-side is-${c.side.toLowerCase()}`}>{c.side}</span>
                                     {REASON[c.reason] && <span className={`positions-panel__closed-reason is-${c.reason}`}>{REASON[c.reason]}</span>}
-                                    <span className={`positions-panel__closed-pnl ${pnlCls(c.pnl)}`}>{usdt(c.pnl)}</span>
+                                    <span className={`positions-panel__closed-pnl ${pnlCls(c.pnl)}`}>{m(c.pnl, true)}</span>
                                 </div>
                             ))}
                         </div>
@@ -472,6 +523,8 @@ const DemoRow = ({
     t: (k: string, v?: Record<string, string | number>) => string
 }) => {
     const { lang } = useI18n()
+    const ccy = useDisplayCurrency()
+    const m = (v: number, signed = false) => fmtMoney(v, ccy.conv, ccy.unit, signed)
     const { p, price, net, roe, liq, fees, funding } = row
 
     const elapsed = now - p.openedAt
@@ -490,7 +543,7 @@ const DemoRow = ({
                 </button>
             </div>
             <div className={`positions-panel__pnl ${pnlCls(net)}`}>
-                {usdt(net)} USDT <span>({usdt(roe)}%)</span>
+                {m(net, true)} {ccy.unit} <span>({usdt(roe)}%)</span>
             </div>
             <div className='positions-panel__pos-meta'>
                 <span>
@@ -501,7 +554,7 @@ const DemoRow = ({
                 </span>
             </div>
             <div className='positions-panel__costs'>
-                {t('pt.fees')} <b>-{formatUsd(fees, 2)}</b> · {t('pt.funding')} <b>{usdt(-funding)}</b>
+                {t('pt.fees')} <b>-{m(fees)}</b> · {t('pt.funding')} <b>{m(-funding, true)}</b>
             </div>
             <div className='positions-panel__opened'>
                 <span>
@@ -580,16 +633,19 @@ const RealView = ({
     account: ReturnType<typeof useRealAccount>
     realUpnl: number
     t: (k: string, v?: Record<string, string | number>) => string
-}) => (
+}) => {
+    const ccy = useDisplayCurrency()
+    const m = (v: number, signed = false) => fmtMoney(v, ccy.conv, ccy.unit, signed)
+    return (
     <div className='positions-panel__account'>
         <div className='positions-panel__equity'>
             <span className='positions-panel__label'>{t('pt.balance')}</span>
-            <b>{account.balance === null ? '—' : `${formatUsd(account.balance, 2)} USDT`}</b>
+            <b>{account.balance === null ? '—' : `${m(account.balance)} ${ccy.unit}`}</b>
         </div>
         <div className='positions-panel__account-grid'>
             <div>
                 <span>{t('pt.upnl')}</span>
-                <b className={pnlCls(realUpnl)}>{usdt(realUpnl)}</b>
+                <b className={pnlCls(realUpnl)}>{m(realUpnl, true)}</b>
             </div>
             <div>
                 <span>{t('pt.open')}</span>
@@ -601,7 +657,8 @@ const RealView = ({
             </div>
         </div>
     </div>
-)
+    )
+}
 
 const RealRow = ({
     pos,
@@ -622,6 +679,8 @@ const RealRow = ({
 }) => {
     const { lang } = useI18n()
     const { push: pushToast } = useToast()
+    const ccy = useDisplayCurrency()
+    const m = (v: number, signed = false) => fmtMoney(v, ccy.conv, ccy.unit, signed)
     const local = getLocalTpSl(pos.symbol)
     const meta = getPositionMeta(pos.symbol)
     const ago =
@@ -680,12 +739,22 @@ const RealRow = ({
                 <span className={`positions-panel__side is-${pos.side.toLowerCase()}`}>
                     {pos.side} {pos.leverage}x
                 </span>
+                <a
+                    className='positions-panel__pos-link'
+                    href={`https://www.binance.com/en/futures/${pos.symbol}`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                    title={t('pt.openBinance', { sym: pos.symbol })}
+                    aria-label={t('pt.openBinance', { sym: pos.symbol })}
+                >
+                    ↗
+                </a>
                 <button className='positions-panel__pos-close' onClick={() => setAskClose(true)} disabled={busy}>
                     {t('pt.close')}
                 </button>
             </div>
             <div className={`positions-panel__pnl ${pnlCls(pos.pnl)}`}>
-                {usdt(pos.pnl)} USDT <span>({usdt(roe)}%)</span>
+                {m(pos.pnl, true)} {ccy.unit} <span>({usdt(roe)}%)</span>
             </div>
             <div className='positions-panel__pos-meta'>
                 <span>
