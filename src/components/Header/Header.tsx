@@ -1,3 +1,4 @@
+import { StrategySelector } from '../StrategySelector/StrategySelector'
 import { ThemeToggle } from '../ThemeToggle/ThemeToggle'
 import { TechnicalToggle } from '../TechnicalToggle/TechnicalToggle'
 import { LanguageToggle } from '../LanguageToggle/LanguageToggle'
@@ -40,13 +41,14 @@ export const Header = ({ symbols }: HeaderProps) => {
                 </span>
                 <div className='app-header__title'>
                     <h1>
-                        V<span>Bounce</span>
+                        Multi<span>Strategy</span>
                     </h1>
                     <p>{t('header.tagline')}</p>
                 </div>
             </div>
 
             <div className='app-header__right'>
+                <StrategySelector />
                 <span className={`app-header__net ${online ? 'is-online' : 'is-offline'}`}>
                     <span className='app-header__net-dot' />
                     {online ? t('net.connected') : t('net.offline')}

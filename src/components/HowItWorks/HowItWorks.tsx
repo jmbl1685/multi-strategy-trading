@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useI18n } from '../../context/I18nContext'
-import { StrategyModal } from '../StrategyModal/StrategyModal'
+import { useActiveStrategy } from '../../context/ActiveStrategyContext'
+import { StrategyInfoModal } from '../StrategyInfoModal/StrategyInfoModal'
 import './HowItWorks.scss'
 
 const STORAGE_KEY = 'v-bounce-howitworks-open'
@@ -8,6 +9,7 @@ const HISTORY_BARS = 1000
 
 export const HowItWorks = () => {
     const { t } = useI18n()
+    const { strategy } = useActiveStrategy()
     const [open, setOpen] = useState(() => localStorage.getItem(STORAGE_KEY) !== 'false')
     const [showExample, setShowExample] = useState(false)
 
@@ -32,8 +34,8 @@ export const HowItWorks = () => {
             </button>
             {open && (
                 <div className='how__body'>
-                    <h4 className='how__section'>{t('how.stratTitle')}</h4>
-                    <p dangerouslySetInnerHTML={{ __html: t('how.stratIntro') }} />
+                    <h4 className='how__section'>{t(`strategy.${strategy}.name`)}</h4>
+                    <p dangerouslySetInnerHTML={{ __html: t(`strategy.${strategy}.intro`) }} />
                     <button className='how__example' onClick={() => setShowExample(true)}>
                         📈 {t('how.example')}
                     </button>
@@ -44,7 +46,7 @@ export const HowItWorks = () => {
                 </div>
             )}
 
-            {showExample && <StrategyModal onClose={() => setShowExample(false)} />}
+            {showExample && <StrategyInfoModal id={strategy} onClose={() => setShowExample(false)} />}
         </section>
     )
 }

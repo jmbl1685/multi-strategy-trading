@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { ThemeProvider } from './context/ThemeContext'
 import { TechnicalModeProvider } from './context/TechnicalModeContext'
 import { DisplayCurrencyProvider } from './context/DisplayCurrencyContext'
+import { ActiveStrategyProvider } from './context/ActiveStrategyContext'
 import { StrategyProvider } from './context/StrategyContext'
 import { I18nProvider } from './context/I18nContext'
 import { PaperTradingProvider } from './context/PaperTradingContext'
@@ -21,17 +22,19 @@ createRoot(document.getElementById('root')!).render(
             <ThemeProvider>
                 <TechnicalModeProvider>
                     <DisplayCurrencyProvider>
-                        <StrategyProvider>
-                            <PaperTradingProvider>
-                                <TradingModeProvider>
-                                    <NotificationsProvider>
-                                        <ToastProvider>
-                                            <App />
-                                        </ToastProvider>
-                                    </NotificationsProvider>
-                                </TradingModeProvider>
-                            </PaperTradingProvider>
-                        </StrategyProvider>
+                        <ActiveStrategyProvider>
+                            <StrategyProvider>
+                                <PaperTradingProvider>
+                                    <TradingModeProvider>
+                                        <NotificationsProvider>
+                                            <ToastProvider>
+                                                <App />
+                                            </ToastProvider>
+                                        </NotificationsProvider>
+                                    </TradingModeProvider>
+                                </PaperTradingProvider>
+                            </StrategyProvider>
+                        </ActiveStrategyProvider>
                     </DisplayCurrencyProvider>
                 </TechnicalModeProvider>
             </ThemeProvider>

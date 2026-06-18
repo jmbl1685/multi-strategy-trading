@@ -1,0 +1,167 @@
+@use '../../styles/variables' as *;
+
+.strat-select {
+    position: relative;
+
+    &__btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        color: var(--text);
+        transition: all 0.15s ease;
+
+        &:hover {
+            border-color: var(--border-strong);
+        }
+
+        b {
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        // One-time discoverability pulse — a glowing accent ring inviting a pick.
+        &.is-pulse {
+            border-color: var(--accent);
+            animation: strat-pulse 1.8s ease-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            &.is-pulse {
+                animation: none;
+            }
+        }
+    }
+
+    @keyframes strat-pulse {
+        0% {
+            box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+        }
+        70% {
+            box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 0%, transparent);
+        }
+        100% {
+            box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+        }
+    }
+
+    &__label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-faint);
+        font-weight: 600;
+    }
+
+    &__chev {
+        font-size: 10px;
+        color: var(--text-dim);
+    }
+
+    &__overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 30;
+    }
+
+    &__menu {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        z-index: 31;
+        width: 280px;
+        max-width: 80vw;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 6px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: $radius-md;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: $radius-sm;
+
+        &.is-active {
+            background: var(--surface-2);
+        }
+        &.is-soon {
+            opacity: 0.55;
+        }
+    }
+
+    &__pick {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 8px 10px;
+        text-align: left;
+        background: none;
+        border: none;
+        border-radius: $radius-sm;
+
+        &:not(:disabled):hover {
+            background: var(--surface-2);
+        }
+        &:disabled {
+            cursor: not-allowed;
+        }
+    }
+
+    &__name {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    &__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--long);
+    }
+
+    &__soon {
+        font-size: 9px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 1px 6px;
+        border-radius: 999px;
+        color: var(--text-dim);
+        background: var(--surface-3);
+    }
+
+    &__tag {
+        font-size: 11px;
+        color: var(--text-dim);
+    }
+
+    &__info {
+        flex: none;
+        width: 28px;
+        height: 28px;
+        font-size: 13px;
+        color: var(--text-dim);
+        background: none;
+        border: none;
+        border-radius: 50%;
+
+        &:hover {
+            color: var(--accent);
+            background: var(--surface-2);
+        }
+    }
+}

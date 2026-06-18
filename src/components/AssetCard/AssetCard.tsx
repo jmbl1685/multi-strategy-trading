@@ -7,6 +7,7 @@ import { useNotifications } from '../../context/NotificationsContext'
 import { usePaperTrading } from '../../context/PaperTradingContext'
 import { useTradingMode } from '../../context/TradingModeContext'
 import { useTechnicalMode } from '../../context/TechnicalModeContext'
+import { useActiveStrategy } from '../../context/ActiveStrategyContext'
 import { useToast } from '../../context/ToastContext'
 import { setPrice } from '../../services/priceStore'
 import { planOrder, openPosition as openRealPosition, type OrderPlan } from '../../services/binanceTrade'
@@ -45,12 +46,13 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
     const { getParams, isCustom, saveParams, clearParams } = useStrategy()
     const { open: openPosition, defaults } = usePaperTrading()
     const { mode, credentials } = useTradingMode()
+    const { strategy } = useActiveStrategy()
     const { notify, shouldAlert } = useNotifications()
     const { technical } = useTechnicalMode()
     const { push: pushToast } = useToast()
     const realMode = mode === 'real' && credentials !== null
     const params = getParams(symbol)
-    const asset = useAssetStream(symbol, interval, params)
+    const asset = useAssetStream(symbol, interval, params, strategy)
     const {
         indicators,
         signal,
@@ -88,7 +90,7 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
         const id = window.setTimeout(() => setBacktest(runBacktest(candles, interval, params)), 0)
         return () => window.clearTimeout(id)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [lastBarTime, interval, paramsSig])
+    }, [lastBarTime, interval, paramsSig, strategy])
 
     const btVerdict = !backtest
         ? null
@@ -249,7 +251,7 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
                             </div>
                             {signal && (
                                 <span className={`asset-card__pattern ${signal.fake ? 'is-fake' : ''}`}>
-                                    {t(PATTERN_KEY[signal.pattern] ?? 'pattern.no-setup')}
+                                    {PATTERN_KEY[signal.pattern] ? t(PATTERN_KEY[signal.pattern]) : signal.pattern}
                                 </span>
                             )}
                         </div>

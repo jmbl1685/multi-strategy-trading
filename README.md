@@ -86,6 +86,6 @@ pnpm run deploy   # push main → production
 
 [![Created by Claude Code](https://img.shields.io/badge/Created%20by-Claude%20Code-d97757?style=for-the-badge&logo=claude&logoColor=white)](https://claude.com/claude-code)
 
-*Under Juan Batty technical instructions*
+*Under Juan Batty technical instructions | 0 human codification*
 
 </div>

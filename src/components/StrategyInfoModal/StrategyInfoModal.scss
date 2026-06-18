@@ -1,0 +1,95 @@
+@use '../../styles/variables' as *;
+
+.stratinfo {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: grid;
+    place-items: center;
+    padding: $space-4;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(2px);
+
+    &__panel {
+        width: 100%;
+        max-width: 760px;
+        max-height: 92vh;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: $space-3;
+        padding: $space-4;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: $radius-lg;
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+    }
+
+    &__head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: $space-3;
+
+        h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 700;
+        }
+        p {
+            margin: 2px 0 0;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+    }
+
+    &__close {
+        font-size: 13px;
+        color: var(--text-dim);
+        background: none;
+        border: none;
+
+        &:hover {
+            color: var(--text);
+        }
+    }
+
+    &__chart {
+        border-radius: $radius-md;
+        overflow: hidden;
+
+        .sample {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+    }
+
+    &__intro {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--text-dim);
+    }
+
+    &__list {
+        margin: 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: var(--text);
+
+        b {
+            color: var(--accent);
+        }
+    }
+
+    &__note {
+        margin: 0;
+        font-size: 11px;
+        color: var(--text-faint);
+    }
+}

@@ -13,6 +13,7 @@ import {
 import { analyze } from '../indicators/analyze'
 import { buildSignal } from '../indicators/signal'
 import { DEFAULT_PARAMS, type StrategyParams } from '../indicators/params'
+import type { StrategyKind } from '../strategies/types'
 
 const MAX_CANDLES = 320
 
@@ -68,7 +69,8 @@ const mergeCandle = (candles: Candle[], candle: Candle) => {
 export const useAssetStream = (
     symbol: string,
     interval: Interval,
-    params: StrategyParams = DEFAULT_PARAMS
+    params: StrategyParams = DEFAULT_PARAMS,
+    strategy?: StrategyKind
 ): AssetState => {
     const initialSource = getPreferredSource()
     const [state, setState] = useState<AssetState>(() => ({
@@ -299,8 +301,9 @@ export const useAssetStream = (
         }
     }, [symbol, interval])
 
-    // Re-evaluate the signal immediately when the strategy params change, without
-    // touching the live socket. Subsequent ticks also pick up paramsRef.
+    // Re-evaluate the signal immediately when the strategy params — or the active
+    // strategy itself — change, without touching the live socket. Subsequent ticks
+    // also pick up paramsRef and the active strategy (read inside buildSignal).
     useEffect(() => {
         paramsRef.current = params
         if (candlesRef.current.length === 0) return
@@ -314,7 +317,7 @@ export const useAssetStream = (
             priceChangePct: analysis.priceChangePct,
             lastUpdate: Date.now()
         }))
-    }, [params])
+    }, [params, strategy])
 
     return state
 }

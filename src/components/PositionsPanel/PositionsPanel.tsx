@@ -153,13 +153,19 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                     <div className='positions-panel__note'>⚠ {t('pt.localNote')}</div>
 
                     <div className='positions-panel__account'>
-                        <div className='positions-panel__equity'>
-                            <span className='positions-panel__label'>{t('pt.equity')}</span>
-                            <b>{m(equity)} {ccy.unit}</b>
+                        <div className='positions-panel__realtop'>
+                            <div className='positions-panel__equity'>
+                                <span className='positions-panel__label'>{t('pt.walletBal')}</span>
+                                <b>{m(account.balance + usedMargin)} {ccy.unit}</b>
+                            </div>
+                            <div className='positions-panel__equity'>
+                                <span className='positions-panel__label'>{t('pt.equity')}</span>
+                                <b className={pnlCls(upnl)}>{m(equity)} {ccy.unit}</b>
+                            </div>
                         </div>
                         <div className='positions-panel__account-grid'>
                             <div>
-                                <span>{t('pt.balance')}</span>
+                                <span>{t('pt.available')}</span>
                                 <b>{m(account.balance)}</b>
                             </div>
                             <div>
