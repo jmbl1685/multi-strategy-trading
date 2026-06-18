@@ -4,6 +4,9 @@ import { DEFAULT_PARAMS, type StrategyParams } from './params'
 // --- Fixed structural constants (not user-tunable) ---------------------------
 // Window (bars) in which the V / inverted-V must form. A turn should be recent.
 const V_WINDOW = 8
+// How many bars ago the price extreme may be and still count as a *live* turn.
+// Beyond this the reversal has already played out — entering now just chases it.
+const MAX_BARS_SINCE_TURN = 2
 // Minimum RSI move on each leg (in RSI points) to count as a real V.
 const RSI_MIN_LEG = 3
 // Volume vs average that signals conviction behind the current candle.
@@ -115,12 +118,26 @@ const evaluateDirection = (candles: Candle[], ind: Indicators, mode: Mode, p: St
     const rsiExtreme = long ? rsiX.value <= p.rsiOversold : rsiX.value >= p.rsiOverbought
     const emaSide = priceX.index >= 0 && (long ? prices[priceX.index] < ema10 : prices[priceX.index] > ema10)
 
-    if (!shape || !rsiExtreme || !emaSide) {
+    // Freshness: the turn must be recent. The detector scans a window, so a peak
+    // several bars back still "shapes" a V — but by then the move has already
+    // played out and entering at the current price is chasing. Only fire while
+    // the extreme is within the last couple of bars (a turn happening now).
+    const barsSinceTurn = priceX.index >= 0 ? candles.length - 1 - priceX.index : Infinity
+    const fresh = barsSinceTurn <= MAX_BARS_SINCE_TURN
+
+    if (!shape || !rsiExtreme || !emaSide || !fresh) {
         if (rsiX.isV && !rsiExtreme) {
             return wait(
                 long
                     ? `RSI V too shallow (trough ${rsiX.value.toFixed(0)}, need ≤ ${p.rsiOversold})`
                     : `RSI inverted-V too shallow (peak ${rsiX.value.toFixed(0)}, need ≥ ${p.rsiOverbought})`
+            )
+        }
+        if (shape && rsiExtreme && emaSide && !fresh) {
+            return wait(
+                long
+                    ? `V-bounce already played out (turn ${barsSinceTurn} bars ago)`
+                    : `Inverted-V already played out (turn ${barsSinceTurn} bars ago)`
             )
         }
         return wait('No clean turn yet')

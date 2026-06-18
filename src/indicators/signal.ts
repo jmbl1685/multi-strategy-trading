@@ -1,6 +1,10 @@
-import type { Candle, Indicators, Signal, SignalKind } from '../types'
+import type { Candle, Indicators, Signal, SignalKind, SignalReason } from '../types'
 import { evaluateVBounce } from './vbounce'
 import { DEFAULT_PARAMS, type StrategyParams } from './params'
+
+// A reversal whose target is already (nearly) reached has no reward left —
+// reject it rather than signal an entry that chases a finished move.
+const MIN_RR = 0.5
 
 interface Plan {
     entry: number | null
@@ -88,18 +92,35 @@ export const buildSignal = (
     params: StrategyParams = DEFAULT_PARAMS
 ): Signal => {
     const v = evaluateVBounce(candles, ind, params)
-    const plan = v.kind === 'WAIT' ? EMPTY_PLAN : planBounce(ind, v.kind, v.stopAnchor, params.stopCushionAtr)
+    let kind = v.kind
+    let plan = kind === 'WAIT' ? EMPTY_PLAN : planBounce(ind, kind, v.stopAnchor, params.stopCushionAtr)
+    let confidence = v.confidence
+    let pattern = v.pattern
+    let fake = v.fake
+    let rawReasons: SignalReason[] = v.reasons
 
-    const reasons = v.reasons
-        .filter((r) => r.direction !== 'neutral' || v.kind === 'WAIT')
+    // No-reward guard: the move has already played out — don't fire an entry.
+    if (kind !== 'WAIT' && plan.riskReward !== null && plan.riskReward < MIN_RR) {
+        kind = 'WAIT'
+        confidence = 0
+        pattern = 'No setup'
+        fake = false
+        rawReasons = [
+            { label: `Move already played out — reward:risk ${plan.riskReward.toFixed(2)} too low`, direction: 'neutral', weight: 0 }
+        ]
+        plan = EMPTY_PLAN
+    }
+
+    const reasons = rawReasons
+        .filter((r) => r.direction !== 'neutral' || kind === 'WAIT')
         .sort((a, b) => b.weight - a.weight)
 
     return {
-        kind: v.kind,
-        confidence: v.confidence,
+        kind,
+        confidence,
         reasons,
-        pattern: v.pattern,
-        fake: v.fake,
+        pattern,
+        fake,
         entry: plan.entry,
         stopLoss: plan.stopLoss,
         takeProfit: plan.takeProfit,
