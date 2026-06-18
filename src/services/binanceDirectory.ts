@@ -1,4 +1,4 @@
-import { getPreferredSource, orderedSources } from './binanceSource'
+import { SOURCE_CHAIN } from './binanceSource'
 
 export interface MarketInfo {
     symbol: string
@@ -37,15 +37,42 @@ const tickToDecimals = (tickSize: string): number => {
     return dot === -1 ? 0 : t.length - dot - 1
 }
 
+// Stablecoins and fiat-pegged tokens — excluded from the directory. A V-bounce
+// needs a volatile underlying, and these clutter the list (and aren't real
+// USDT-M perps anyway). Matched against the symbol's base asset.
+const EXCLUDED_BASES = new Set([
+    'USDC', 'USDT', 'BUSD', 'FDUSD', 'TUSD', 'DAI', 'USDP', 'USDD', 'USD1',
+    'PYUSD', 'USDE', 'GUSD', 'LUSD', 'FRAX', 'AEUR', 'EUR', 'EURI', 'GBP',
+    'XUSD', 'USTC', 'USD'
+])
+
 let cache: MarketInfo[] | null = null
 let inflight: Promise<MarketInfo[]> | null = null
 
+// Cap any single source's fetch so a tarpitted/geo-restricted endpoint can't
+// hang the dropdown — we abort and fall through to the next source instead.
+const SOURCE_TIMEOUT_MS = 6000
+
+const fetchWithTimeout = async (url: string): Promise<Response> => {
+    const ctrl = new AbortController()
+    const timer = window.setTimeout(() => ctrl.abort(), SOURCE_TIMEOUT_MS)
+    try {
+        return await fetch(url, { signal: ctrl.signal })
+    } finally {
+        window.clearTimeout(timer)
+    }
+}
+
 const load = async (): Promise<MarketInfo[]> => {
-    for (const source of orderedSources(getPreferredSource())) {
+    // The directory always comes from Futures first (regardless of which source
+    // happens to deliver live price frames — futures' market-data WS is
+    // geo-restricted in some regions, but its REST exchangeInfo is not). Spot is
+    // only a last-resort fallback if futures REST is entirely unreachable.
+    for (const source of SOURCE_CHAIN) {
         try {
             const [infoRes, tickRes] = await Promise.all([
-                fetch(`${source.restBase}/exchangeInfo`),
-                fetch(`${source.restBase}/ticker/24hr`)
+                fetchWithTimeout(`${source.restBase}/exchangeInfo`),
+                fetchWithTimeout(`${source.restBase}/ticker/24hr`)
             ])
             if (!infoRes.ok || !tickRes.ok) continue
 
@@ -59,6 +86,7 @@ const load = async (): Promise<MarketInfo[]> => {
                 // Futures: perpetuals only. Spot: no contractType, so accept.
                 if (s.contractType && s.contractType !== 'PERPETUAL') continue
                 if (s.quoteAsset !== 'USDT') continue
+                if (EXCLUDED_BASES.has(s.baseAsset)) continue
 
                 const t = tickMap.get(s.symbol)
                 const priceFilter = s.filters?.find((f) => f.filterType === 'PRICE_FILTER')

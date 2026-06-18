@@ -170,6 +170,20 @@
         gap: $space-2;
     }
 
+    &__signal-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+
+    &__signal-label {
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-faint);
+    }
+
     &__pattern {
         font-size: 11px;
         font-weight: 600;

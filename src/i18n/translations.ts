@@ -8,6 +8,8 @@ export const translations: Record<Lang, Dict> = {
         'header.tagline': 'RSI V-reversal bounce signals · live from Binance',
         'header.market': 'market',
         'header.markets': 'markets',
+        'tech.on': 'Technical mode on — click to hide RSI / MACD / EMA / Smart Money / levels',
+        'tech.off': 'Technical mode off — click to show indicators',
         'notif.settings': 'Signal alerts',
         'notif.master': 'Signal alerts',
         'notif.sound': 'Play a sound',
@@ -71,6 +73,7 @@ export const translations: Record<Lang, Dict> = {
 
         // Card
         'card.trend': 'Trend',
+        'card.signal': 'Signal',
         'trend.up': 'Uptrend',
         'trend.down': 'Downtrend',
         'trend.range': 'Ranging',
@@ -263,6 +266,8 @@ export const translations: Record<Lang, Dict> = {
         'header.tagline': 'Señales de rebote en V del RSI · en vivo desde Binance',
         'header.market': 'mercado',
         'header.markets': 'mercados',
+        'tech.on': 'Modo técnico activado — clic para ocultar RSI / MACD / EMA / Smart Money / niveles',
+        'tech.off': 'Modo técnico desactivado — clic para mostrar indicadores',
         'notif.settings': 'Alertas de señales',
         'notif.master': 'Alertas de señales',
         'notif.sound': 'Reproducir un sonido',
@@ -326,6 +331,7 @@ export const translations: Record<Lang, Dict> = {
 
         // Card
         'card.trend': 'Tendencia',
+        'card.signal': 'Señal',
         'trend.up': 'Alcista',
         'trend.down': 'Bajista',
         'trend.range': 'En rango',

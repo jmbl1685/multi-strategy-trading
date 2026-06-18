@@ -43,29 +43,4 @@
         color: var(--text);
         font-weight: 600;
     }
-
-    &__close {
-        margin-left: auto;
-        font-variant-numeric: tabular-nums;
-
-        b {
-            font-family: $font-mono;
-            color: var(--text);
-        }
-    }
-
-    &__bar {
-        height: 4px;
-        border-radius: 999px;
-        background: var(--surface-3);
-        overflow: hidden;
-    }
-
-    &__bar-fill {
-        display: block;
-        height: 100%;
-        border-radius: 999px;
-        background: linear-gradient(90deg, var(--accent), var(--cyan));
-        transition: width 0.9s linear;
-    }
 }

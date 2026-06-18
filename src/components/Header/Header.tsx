@@ -1,4 +1,5 @@
 import { ThemeToggle } from '../ThemeToggle/ThemeToggle'
+import { TechnicalToggle } from '../TechnicalToggle/TechnicalToggle'
 import { LanguageToggle } from '../LanguageToggle/LanguageToggle'
 import { NotifyToggle } from '../NotifyToggle/NotifyToggle'
 import { useOnlineStatus } from '../../hooks/useOnlineStatus'
@@ -54,6 +55,7 @@ export const Header = ({ symbols }: HeaderProps) => {
                     <b>{assetCount}</b> {assetCount === 1 ? t('header.market') : t('header.markets')}
                 </span>
                 <NotifyToggle symbols={symbols} />
+                <TechnicalToggle />
                 <LanguageToggle />
                 <ThemeToggle />
             </div>

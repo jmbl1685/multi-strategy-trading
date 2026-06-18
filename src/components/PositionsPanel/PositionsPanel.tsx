@@ -17,6 +17,7 @@ import { useRealAccount } from '../../hooks/useRealAccount'
 import { getPrice } from '../../services/priceStore'
 import { closePosition as realClose, type Credentials, type RealPosition } from '../../services/binanceTrade'
 import { getLocalTpSl, setLocalTpSl, clearLocalTpSl, localTpSlSymbols, subscribeTpSl } from '../../services/realTpSl'
+import { getPositionMeta, clearPositionMeta, positionMetaSymbols } from '../../services/realPositionMeta'
 import { AssetLogo } from '../AssetLogo/AssetLogo'
 import { CredentialsModal } from '../CredentialsModal/CredentialsModal'
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog'
@@ -251,7 +252,7 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
                         <div className='positions-panel__empty'>{t('pt.none')}</div>
                     ) : (
                         liveAccount.positions.map((p) => (
-                            <RealRow key={p.symbol} pos={p} creds={credentials!} onAfter={liveAccount.refresh} mode={tpslMode} onModeChange={setTpslMode} t={t} />
+                            <RealRow key={p.symbol} pos={p} now={now} creds={credentials!} onAfter={liveAccount.refresh} mode={tpslMode} onModeChange={setTpslMode} t={t} />
                         ))
                     )}
                 </div>
@@ -543,6 +544,7 @@ const useRealTpSlGuard = (creds: Credentials | null, positions: RealPosition[], 
         if (loaded) {
             const open = new Set(positions.map((p) => p.symbol))
             for (const sym of localTpSlSymbols()) if (!open.has(sym)) clearLocalTpSl(sym)
+            for (const sym of positionMetaSymbols()) if (!open.has(sym)) clearPositionMeta(sym)
         }
 
         for (const pos of positions) {
@@ -556,7 +558,10 @@ const useRealTpSlGuard = (creds: Credentials | null, positions: RealPosition[], 
             if ((hitTp || hitSl) && !closing.current.has(pos.symbol)) {
                 closing.current.add(pos.symbol)
                 realClose(creds, pos)
-                    .then(() => clearLocalTpSl(pos.symbol))
+                    .then(() => {
+                        clearLocalTpSl(pos.symbol)
+                        clearPositionMeta(pos.symbol)
+                    })
                     .catch(() => {})
                     .finally(() => {
                         closing.current.delete(pos.symbol)
@@ -600,6 +605,7 @@ const RealView = ({
 
 const RealRow = ({
     pos,
+    now,
     creds,
     onAfter,
     mode,
@@ -607,14 +613,23 @@ const RealRow = ({
     t
 }: {
     pos: RealPosition
+    now: number
     creds: Credentials
     onAfter: () => void
     mode: TpSlMode
     onModeChange: (m: TpSlMode) => void
     t: (k: string, v?: Record<string, string | number>) => string
 }) => {
+    const { lang } = useI18n()
     const { push: pushToast } = useToast()
     const local = getLocalTpSl(pos.symbol)
+    const meta = getPositionMeta(pos.symbol)
+    const ago =
+        meta === null
+            ? ''
+            : now - meta.openedAt < 60_000
+              ? t('pt.justNow')
+              : t('pt.ago', { d: formatAgo(now - meta.openedAt) })
     const [busy, setBusy] = useState(false)
     const [askClose, setAskClose] = useState(false)
     const long = pos.side === 'LONG'
@@ -629,6 +644,7 @@ const RealRow = ({
         setBusy(true)
         try {
             await realClose(creds, pos)
+            clearPositionMeta(pos.symbol)
             onAfter()
             pushToast({ variant: 'success', title: t('toast.closedTitle'), message: t('toast.closedMsg', { sym: pos.base }) })
         } catch (e) {
@@ -679,6 +695,14 @@ const RealRow = ({
                     {t('pt.liq')} <b>{pos.liqPrice > 0 ? formatPrice(pos.liqPrice) : '—'}</b>
                 </span>
             </div>
+            {meta && (
+                <div className='positions-panel__opened'>
+                    <span>
+                        🕒 {t('pt.opened')} {formatOpenedAt(meta.openedAt, lang)} · {ago}
+                    </span>
+                    {meta.interval && <span className='positions-panel__tf'>{meta.interval}</span>}
+                </div>
+            )}
             <TpSlEditor
                 entry={pos.entryPrice}
                 qty={pos.qty}

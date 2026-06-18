@@ -6,9 +6,11 @@ import { useI18n } from '../../context/I18nContext'
 import { useNotifications } from '../../context/NotificationsContext'
 import { usePaperTrading } from '../../context/PaperTradingContext'
 import { useTradingMode } from '../../context/TradingModeContext'
+import { useTechnicalMode } from '../../context/TechnicalModeContext'
 import { useToast } from '../../context/ToastContext'
 import { setPrice } from '../../services/priceStore'
 import { planOrder, openPosition as openRealPosition, type OrderPlan } from '../../services/binanceTrade'
+import { setPositionMeta } from '../../services/realPositionMeta'
 import { OrderModal, type OrderStatus } from '../OrderModal/OrderModal'
 import { runBacktest } from '../../indicators/backtest'
 import { SignalBadge } from '../SignalBadge/SignalBadge'
@@ -44,6 +46,7 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
     const { open: openPosition, defaults } = usePaperTrading()
     const { mode, credentials } = useTradingMode()
     const { notify, shouldAlert } = useNotifications()
+    const { technical } = useTechnicalMode()
     const { push: pushToast } = useToast()
     const realMode = mode === 'real' && credentials !== null
     const params = getParams(symbol)
@@ -96,7 +99,10 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
             : ({ kind: 'fail', r: backtest.totalR, win: backtest.winRate, pf: backtest.profitFactor } as const)
 
     // Hard gate: a failing backtest blocks the trade buttons until overridden.
-    const btBlocked = btVerdict?.kind === 'fail' && !btOverride
+    // Only while the verdict is on screen (technical mode) — in basic mode the
+    // verdict box is hidden, so gating here would disable the buttons with no
+    // visible reason; the real-order confirm modal still surfaces the warning.
+    const btBlocked = technical && btVerdict?.kind === 'fail' && !btOverride
 
     // Feed the live price to the shared store so the positions panel can mark PnL.
     useEffect(() => {
@@ -151,6 +157,9 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
         setOrder((o) => (o ? { ...o, status: 'placing' } : o))
         try {
             await openRealPosition(credentials, order.plan)
+            // Record the timeframe + open time locally — Binance doesn't track
+            // these, so this is what lets the positions panel show "opened … ago".
+            setPositionMeta(symbol, interval, Date.now())
             setOrder(null)
             pushToast({
                 variant: 'success',
@@ -234,7 +243,10 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
                 <>
                     <div className='asset-card__signal'>
                         <div className='asset-card__signal-left'>
-                            <SignalBadge signal={signal} size='lg' />
+                            <div className='asset-card__signal-col'>
+                                <span className='asset-card__signal-label'>{t('card.signal')}</span>
+                                <SignalBadge signal={signal} size='lg' />
+                            </div>
                             {signal && (
                                 <span className={`asset-card__pattern ${signal.fake ? 'is-fake' : ''}`}>
                                     {t(PATTERN_KEY[signal.pattern] ?? 'pattern.no-setup')}
@@ -255,24 +267,22 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
                         </div>
                     )}
 
-                    <HorizonTag
-                        interval={interval}
-                        lastOpenTime={candles.length ? candles[candles.length - 1].openTime : null}
-                        signal={signal?.kind ?? 'WAIT'}
-                    />
+                    <HorizonTag interval={interval} signal={signal?.kind ?? 'WAIT'} />
 
-                    <IndicatorGrid indicators={indicators} priceDecimals={priceDecimals} />
+                    {technical && <IndicatorGrid indicators={indicators} priceDecimals={priceDecimals} />}
 
-                    <div className='asset-card__levels'>
-                        <div className='asset-card__level asset-card__level--res'>
-                            <span>{t('card.resistance')}</span>
-                            <b>{formatPrice(indicators.resistance, priceDecimals)}</b>
+                    {technical && (
+                        <div className='asset-card__levels'>
+                            <div className='asset-card__level asset-card__level--res'>
+                                <span>{t('card.resistance')}</span>
+                                <b>{formatPrice(indicators.resistance, priceDecimals)}</b>
+                            </div>
+                            <div className='asset-card__level asset-card__level--sup'>
+                                <span>{t('card.support')}</span>
+                                <b>{formatPrice(indicators.support, priceDecimals)}</b>
+                            </div>
                         </div>
-                        <div className='asset-card__level asset-card__level--sup'>
-                            <span>{t('card.support')}</span>
-                            <b>{formatPrice(indicators.support, priceDecimals)}</b>
-                        </div>
-                    </div>
+                    )}
 
                     {signal && signal.kind !== 'WAIT' && signal.entry && (
                         <div className='asset-card__plan'>
@@ -305,7 +315,7 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
                         </div>
                     )}
 
-                    {signal && signal.reasons.length > 0 && (
+                    {technical && signal && signal.reasons.length > 0 && (
                         <ul className='asset-card__reasons'>
                             {signal.reasons.slice(0, 4).map((r) => (
                                 <li key={r.label} className={`asset-card__reason is-${r.direction}`}>
@@ -316,7 +326,7 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
                         </ul>
                     )}
 
-                    {btVerdict && (
+                    {technical && btVerdict && (
                         <div className={`asset-card__bt asset-card__bt--${btVerdict.kind}`}>
                             <span className='asset-card__bt-icon'>
                                 {btVerdict.kind === 'fail' ? '⚠' : btVerdict.kind === 'pass' ? '✓' : '📉'}
