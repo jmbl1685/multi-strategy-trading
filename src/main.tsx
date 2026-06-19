@@ -10,6 +10,7 @@ import { PaperTradingProvider } from './context/PaperTradingContext'
 import { TradingModeProvider } from './context/TradingModeContext'
 import { NotificationsProvider } from './context/NotificationsContext'
 import { ToastProvider } from './context/ToastContext'
+import { Analytics } from '@vercel/analytics/react'
 import { App } from './App'
 import { initCursors } from './utils/cursors'
 import './global.scss'
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
                                         <NotificationsProvider>
                                             <ToastProvider>
                                                 <App />
+                                                <Analytics />
                                             </ToastProvider>
                                         </NotificationsProvider>
                                     </TradingModeProvider>
