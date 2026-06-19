@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Interval } from '../../types'
 import { symbolExists } from '../../services/binanceRest'
 import { fetchDirectory, searchDirectory, type DirSort, type MarketInfo } from '../../services/binanceDirectory'
@@ -31,6 +31,16 @@ export const AddAssetForm = ({ interval, existing, onAdd, onIntervalChange }: Ad
     const [directory, setDirectory] = useState<MarketInfo[] | null>(null)
     const [focused, setFocused] = useState(false)
     const [sort, setSort] = useState<DirSort>('vol')
+    const inputRef = useRef<HTMLInputElement>(null)
+
+    // Drop focus after a successful add so the input ring clears and the
+    // dropdown doesn't immediately re-open (picks keep focus via mousedown-guard).
+    const dismiss = () => {
+        setValue('')
+        setError(null)
+        setFocused(false)
+        inputRef.current?.blur()
+    }
 
     useEffect(() => {
         let active = true
@@ -70,15 +80,12 @@ export const AddAssetForm = ({ interval, existing, onAdd, onIntervalChange }: Ad
             return
         }
         onAdd(symbol)
-        setValue('')
-        setFocused(false)
+        dismiss()
     }
 
     const pick = (symbol: string) => {
         if (!existing.includes(symbol)) onAdd(symbol)
-        setValue('')
-        setError(null)
-        setFocused(false)
+        dismiss()
     }
 
     const onSubmit = (e: React.FormEvent) => {
@@ -94,6 +101,7 @@ export const AddAssetForm = ({ interval, existing, onAdd, onIntervalChange }: Ad
             <div className='add-asset__row'>
                 <div className='add-asset__field'>
                     <input
+                        ref={inputRef}
                         className='add-asset__input'
                         placeholder={t('addAsset.placeholder')}
                         value={value}
