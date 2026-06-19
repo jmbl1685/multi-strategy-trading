@@ -2,7 +2,7 @@
     "name": "multi-strategy",
     "description": "Real-time crypto futures signal dashboard — 8 switchable strategies on live Binance data, with backtesting, paper and real trading.",
     "private": true,
-    "version": "0.1.12",
+    "version": "0.1.13",
     "type": "module",
     "scripts": {
         "dev": "vite",
