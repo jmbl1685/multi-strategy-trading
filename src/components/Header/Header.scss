@@ -47,6 +47,24 @@
         gap: $space-4;
     }
 
+    &__tutorial {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+        background: var(--accent-soft);
+        border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+        border-radius: 999px;
+        transition: all 0.15s ease;
+
+        &:hover {
+            background: color-mix(in srgb, var(--accent) 22%, var(--accent-soft));
+        }
+    }
+
     &__net {
         display: inline-flex;
         align-items: center;

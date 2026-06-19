@@ -44,7 +44,7 @@ const PATTERN_KEY: Record<string, string> = {
 export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
     const { t } = useI18n()
     const { getParams, isCustom, saveParams, clearParams } = useStrategy()
-    const { open: openPosition, defaults } = usePaperTrading()
+    const { open: openPosition, positions: paperPositions, defaults } = usePaperTrading()
     const { mode, credentials } = useTradingMode()
     const { strategy } = useActiveStrategy()
     const { notify, shouldAlert } = useNotifications()
@@ -150,7 +150,14 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
             }
             return
         }
-        openPosition({ symbol, base: base(symbol), side, price, decimals: priceDecimals ?? 2, interval })
+        // Block a same-symbol, same-direction duplicate (the opposite side is allowed
+        // — coverage/hedge). Surface a clear reason instead of a silent no-op.
+        if (paperPositions.some((p) => p.symbol === symbol && p.side === side)) {
+            pushToast({ variant: 'error', title: t('toast.dupTitle'), message: t('toast.dupMsg', { side, sym: base(symbol) }) })
+            return
+        }
+        const ok = openPosition({ symbol, base: base(symbol), side, price, decimals: priceDecimals ?? 2, interval, strategy })
+        if (!ok) pushToast({ variant: 'error', title: t('toast.failedTitle'), message: t('toast.openFail') })
     }
 
     // Place the real order from the confirm modal, then report via a banner toast.
@@ -159,9 +166,9 @@ export const AssetCard = ({ symbol, interval, onRemove }: AssetCardProps) => {
         setOrder((o) => (o ? { ...o, status: 'placing' } : o))
         try {
             await openRealPosition(credentials, order.plan)
-            // Record the timeframe + open time locally — Binance doesn't track
-            // these, so this is what lets the positions panel show "opened … ago".
-            setPositionMeta(symbol, interval, Date.now())
+            // Record the timeframe + open time + strategy locally — Binance doesn't
+            // track these, so this is what lets the positions panel show them.
+            setPositionMeta(symbol, interval, Date.now(), strategy)
             setOrder(null)
             pushToast({
                 variant: 'success',

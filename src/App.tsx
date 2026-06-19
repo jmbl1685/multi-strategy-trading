@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { Interval } from './types'
 import { Header } from './components/Header/Header'
+import { TutorialPage } from './components/TutorialPage/TutorialPage'
 import { AddAssetForm } from './components/AddAssetForm/AddAssetForm'
 import { AssetCard } from './components/AssetCard/AssetCard'
 import { HowItWorks } from './components/HowItWorks/HowItWorks'
@@ -38,6 +39,8 @@ export const App = () => {
     const [watchlist, setWatchlist] = useState<string[]>(loadWatchlist)
     const [interval, setInterval] = useState<Interval>(loadInterval)
     const [panelOpen, setPanelOpen] = useState(() => localStorage.getItem(PANEL_KEY) !== 'false')
+    const [showTutorial, setShowTutorial] = useState(false)
+    const [view, setView] = useState<'markets' | 'positions'>('markets')
 
     useEffect(() => {
         localStorage.setItem(PANEL_KEY, String(panelOpen))
@@ -62,34 +65,56 @@ export const App = () => {
     return (
         <div className={`app ${panelOpen ? 'app--panel' : ''}`}>
             <div className='app__shell'>
-                <Header symbols={watchlist} />
+                <Header symbols={watchlist} onOpenTutorial={() => setShowTutorial(true)} />
 
-                <AddAssetForm
-                    interval={interval}
-                    existing={watchlist}
-                    onAdd={addAsset}
-                    onIntervalChange={setInterval}
-                />
+                <div className='app__tabs' role='tablist'>
+                    <button
+                        className={`app__tab ${view === 'markets' ? 'is-active' : ''}`}
+                        onClick={() => setView('markets')}
+                    >
+                        {t('app.tabMarkets')}
+                    </button>
+                    <button
+                        className={`app__tab ${view === 'positions' ? 'is-active' : ''}`}
+                        onClick={() => setView('positions')}
+                    >
+                        {t('app.tabPositions')}
+                        {positions.length > 0 && <span className='app__tab-badge'>{positions.length}</span>}
+                    </button>
+                </div>
 
-                <HowItWorks />
-
-                {watchlist.length === 0 ? (
-                    <div className='app__empty'>
-                        <div className='app__empty-icon'>📡</div>
-                        <h2>{t('app.emptyTitle')}</h2>
-                        <p>{t('app.emptyBody')}</p>
-                    </div>
+                {view === 'positions' ? (
+                    <PositionsPanel layout='board' open onClose={() => setView('markets')} />
                 ) : (
-                    <section className='app__grid'>
-                        {watchlist.map((symbol) => (
-                            <AssetCard
-                                key={`${symbol}-${interval}`}
-                                symbol={symbol}
-                                interval={interval}
-                                onRemove={removeAsset}
-                            />
-                        ))}
-                    </section>
+                    <>
+                        <AddAssetForm
+                            interval={interval}
+                            existing={watchlist}
+                            onAdd={addAsset}
+                            onIntervalChange={setInterval}
+                        />
+
+                        <HowItWorks />
+
+                        {watchlist.length === 0 ? (
+                            <div className='app__empty'>
+                                <div className='app__empty-icon'>📡</div>
+                                <h2>{t('app.emptyTitle')}</h2>
+                                <p>{t('app.emptyBody')}</p>
+                            </div>
+                        ) : (
+                            <section className='app__grid'>
+                                {watchlist.map((symbol) => (
+                                    <AssetCard
+                                        key={`${symbol}-${interval}`}
+                                        symbol={symbol}
+                                        interval={interval}
+                                        onRemove={removeAsset}
+                                    />
+                                ))}
+                            </section>
+                        )}
+                    </>
                 )}
 
                 <footer className='app__footer'>
@@ -113,11 +138,13 @@ export const App = () => {
                 </footer>
             </div>
 
-            <PositionsPanel open={panelOpen} onClose={() => setPanelOpen(false)} />
+            {view === 'markets' && <PositionsPanel open={panelOpen} onClose={() => setPanelOpen(false)} />}
 
             <ToastHost />
 
-            {!panelOpen && (
+            {showTutorial && <TutorialPage onClose={() => setShowTutorial(false)} />}
+
+            {view === 'markets' && !panelOpen && (
                 <button className='app__panel-toggle' onClick={() => setPanelOpen(true)}>
                     📋 {t('pt.toggle')}
                     {positions.length > 0 && <span className='app__panel-badge'>{positions.length}</span>}

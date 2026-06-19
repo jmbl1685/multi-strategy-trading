@@ -20,6 +20,8 @@ export interface Position {
     openedAt: number
     /** Timeframe the signal/position was opened on (e.g. '15m'). */
     interval?: Interval
+    /** Active strategy id when the position was opened (e.g. 'vbounce'). */
+    strategy?: string
     /** Fee rate locked in at open (so close uses the same rate). */
     feeRate: number
     /** Fee paid when the position was opened. */
@@ -40,6 +42,7 @@ export interface ClosedTrade {
     roe: number
     reason: CloseReason
     closedAt: number
+    strategy?: string
 }
 
 interface Account {
@@ -102,7 +105,7 @@ interface PaperTradingValue {
     closed: ClosedTrade[]
     defaults: Defaults
     startBalance: number
-    open: (args: { symbol: string; base: string; side: Side; price: number; decimals: number; interval: Interval }) => boolean
+    open: (args: { symbol: string; base: string; side: Side; price: number; decimals: number; interval: Interval; strategy?: string }) => boolean
     close: (id: string, price: number, reason?: CloseReason) => void
     setTpSl: (id: string, tp: number | null, sl: number | null) => void
     setDefaults: (d: Partial<Defaults>) => void
@@ -168,8 +171,11 @@ export const PaperTradingProvider = ({ children }: { children: ReactNode }) => {
     }, [account, positions, closed, defaults, startBalance])
 
     const open: PaperTradingValue['open'] = useCallback(
-        ({ symbol, base, side, price, decimals, interval }) => {
+        ({ symbol, base, side, price, decimals, interval, strategy }) => {
             if (!(price > 0)) return false
+            // One position per (symbol, side): a same-direction duplicate is blocked,
+            // but the opposite side is allowed — hedge / coverage mode.
+            if (positionsRef.current.some((p) => p.symbol === symbol && p.side === side)) return false
             const { margin, leverage } = defaults
             const feeRate = feeRateOf(defaults.feeMode, defaults.bnb)
             const openFee = margin * leverage * feeRate
@@ -177,7 +183,7 @@ export const PaperTradingProvider = ({ children }: { children: ReactNode }) => {
             const qty = (margin * leverage) / price
             setAccount((a) => ({ balance: a.balance - margin - openFee, realized: a.realized - openFee }))
             setPositions((ps) => [
-                { id: newId(), symbol, base, side, entryPrice: price, margin, leverage, qty, decimals, openedAt: Date.now(), interval, feeRate, openFee, tp: null, sl: null },
+                { id: newId(), symbol, base, side, entryPrice: price, margin, leverage, qty, decimals, openedAt: Date.now(), interval, strategy, feeRate, openFee, tp: null, sl: null },
                 ...ps
             ])
             return true
@@ -209,7 +215,8 @@ export const PaperTradingProvider = ({ children }: { children: ReactNode }) => {
                     pnl,
                     roe,
                     reason,
-                    closedAt: now
+                    closedAt: now,
+                    strategy: pos.strategy
                 },
                 ...c
             ].slice(0, 30)

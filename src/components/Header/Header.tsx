@@ -9,9 +9,10 @@ import './Header.scss'
 
 interface HeaderProps {
     symbols: string[]
+    onOpenTutorial: () => void
 }
 
-export const Header = ({ symbols }: HeaderProps) => {
+export const Header = ({ symbols, onOpenTutorial }: HeaderProps) => {
     const assetCount = symbols.length
     const online = useOnlineStatus()
     const { t } = useI18n()
@@ -48,6 +49,9 @@ export const Header = ({ symbols }: HeaderProps) => {
             </div>
 
             <div className='app-header__right'>
+                <button className='app-header__tutorial' onClick={onOpenTutorial} title={t('tut.button')}>
+                    🎓 <span>{t('tut.button')}</span>
+                </button>
                 <StrategySelector />
                 <span className={`app-header__net ${online ? 'is-online' : 'is-offline'}`}>
                     <span className='app-header__net-dot' />

@@ -20,6 +20,41 @@
         transform: translateX(0);
     }
 
+    // Board layout: full-width, in the page flow, with the positions as a grid.
+    &.is-board {
+        position: static;
+        inset: auto;
+        width: 100%;
+        max-width: none;
+        height: auto;
+        z-index: auto;
+        transform: none;
+        box-shadow: none;
+        border: none;
+        background: transparent;
+        overflow: visible;
+
+        .positions-panel__head {
+            display: none;
+        }
+
+        .positions-panel__list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: $space-3;
+            align-items: start;
+            padding: $space-2 0;
+        }
+
+        .positions-panel__pos {
+            margin: 0;
+        }
+
+        .positions-panel__history-list {
+            max-height: none;
+        }
+    }
+
     &__head {
         display: flex;
         align-items: flex-start;
@@ -688,6 +723,13 @@
         color: var(--text-faint);
     }
 
+    &__pos-tags {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
     &__tf {
         flex: none;
         padding: 1px 7px;
@@ -696,6 +738,16 @@
         font-weight: 700;
         color: var(--accent);
         background: var(--accent-soft);
+        border-radius: 999px;
+    }
+
+    &__strat {
+        flex: none;
+        padding: 1px 7px;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--cyan);
+        background: var(--surface-3);
         border-radius: 999px;
     }
 

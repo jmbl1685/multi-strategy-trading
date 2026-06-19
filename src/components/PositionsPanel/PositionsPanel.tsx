@@ -30,6 +30,8 @@ import './PositionsPanel.scss'
 interface PositionsPanelProps {
     open: boolean
     onClose: () => void
+    /** 'drawer' = slide-in side panel; 'board' = full-width grid in the main area. */
+    layout?: 'drawer' | 'board'
 }
 
 const LEVERAGES = [3, 5, 10, 20, 50]
@@ -50,7 +52,8 @@ const parseNum = (v: string): number | null => {
     return Number.isFinite(n) && n > 0 ? n : null
 }
 
-export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
+export const PositionsPanel = ({ open, onClose, layout = 'drawer' }: PositionsPanelProps) => {
+    const board = layout === 'board'
     const { t } = useI18n()
     const { account, positions, closed, defaults, startBalance, close, setTpSl, setDefaults, setStartBalance, reset } =
         usePaperTrading()
@@ -118,7 +121,10 @@ export const PositionsPanel = ({ open, onClose }: PositionsPanelProps) => {
     const realUpnl = liveAccount.positions.reduce((s, p) => s + p.pnl, 0)
 
     return (
-        <aside className={`positions-panel ${open ? 'is-open' : ''} ${real ? 'is-real' : ''}`} aria-hidden={!open}>
+        <aside
+            className={`positions-panel ${open || board ? 'is-open' : ''} ${real ? 'is-real' : ''} ${board ? 'is-board' : ''}`}
+            aria-hidden={!open && !board}
+        >
             <header className='positions-panel__head'>
                 <div>
                     <h3>{t('pt.title')}</h3>
@@ -615,7 +621,10 @@ const DemoRow = ({
                 <span>
                     🕒 {t('pt.opened')} {formatOpenedAt(p.openedAt, lang)} · {ago}
                 </span>
-                {p.interval && <span className='positions-panel__tf'>{p.interval}</span>}
+                <span className='positions-panel__pos-tags'>
+                    {p.strategy && <span className='positions-panel__strat'>{t(`strategy.${p.strategy}.name`)}</span>}
+                    {p.interval && <span className='positions-panel__tf'>{p.interval}</span>}
+                </span>
             </div>
             <TpSlEditor
                 entry={p.entryPrice}
@@ -838,7 +847,10 @@ const RealRow = ({
                     <span>
                         🕒 {t('pt.opened')} {formatOpenedAt(meta.openedAt, lang)} · {ago}
                     </span>
-                    {meta.interval && <span className='positions-panel__tf'>{meta.interval}</span>}
+                    <span className='positions-panel__pos-tags'>
+                        {meta.strategy && <span className='positions-panel__strat'>{t(`strategy.${meta.strategy}.name`)}</span>}
+                        {meta.interval && <span className='positions-panel__tf'>{meta.interval}</span>}
+                    </span>
                 </div>
             )}
             <TpSlEditor

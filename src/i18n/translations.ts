@@ -83,6 +83,58 @@ export const translations: Record<Lang, Dict> = {
         'strategy.stochastic.b3': '<b>Trend filter</b> — only fades the pullback, never the trend itself.',
         'strategy.stochastic.b4': '<b>Stop</b> — beyond the recent swing low / high.',
         'strategy.stochastic.b5': '<b>Target</b> — the next structure, scaled by ATR.',
+        'tut.button': 'Tutorial',
+        'tut.title': 'Trading tutorial',
+        'tut.subtitle': 'Futures trading explained for beginners — with examples. Read this before risking real money.',
+        'tut.back': '← Back to dashboard',
+        'tut.got': 'Got it — back to the app',
+        'tut.exLabel': 'Example',
+        'tut.note': 'This app is for education only. Nothing here is financial advice. Always start on Demo or testnet, and never trade money you can’t afford to lose.',
+        'tut.tbl.lev': 'Leverage',
+        'tut.tbl.controls': '$100 controls',
+        'tut.tbl.up': '+2% price',
+        'tut.tbl.down': '−2% price',
+        'tut.futures.t': 'What is futures trading?',
+        'tut.futures.b':
+            'Futures let you bet on a coin’s price <b>going up or down</b> without owning it. These are <b>perpetual</b> contracts (no expiry date) traded with <b>leverage</b> — borrowed buying power. You can profit in either direction, but leverage amplifies <b>losses</b> just as much as gains.',
+        'tut.long.t': 'LONG — betting the price goes UP',
+        'tut.long.b': 'Going <b>LONG</b> means you profit when the price <b>rises</b>. You’re effectively buying now to sell higher later.',
+        'tut.long.ex': 'Long 0.01 BTC at <b>$60,000</b>. If BTC rises to <b>$63,000</b> (+5%) you make about <b>+$30</b>. If it falls to $57,000, you lose about <b>−$30</b>.',
+        'tut.short.t': 'SHORT — betting the price goes DOWN',
+        'tut.short.b': 'Going <b>SHORT</b> means you profit when the price <b>falls</b>. You sell (borrowed) now to buy back cheaper later — the opposite of a long.',
+        'tut.short.ex': 'Short 0.01 BTC at <b>$60,000</b>. If BTC falls to <b>$57,000</b> (−5%) you make about <b>+$30</b>. If it rises to $63,000, you lose about <b>−$30</b>.',
+        'tut.coverage.t': 'Coverage (hedge) — holding both sides',
+        'tut.coverage.b':
+            'You can hold a <b>LONG and a SHORT on the same coin at the same time</b> — called <b>hedge</b> or <b>coverage</b> mode. The two offset each other, so you can protect (cover) an open position while you decide your next move. What you <b>cannot</b> do is open <b>two trades in the same direction</b> on the same coin — that would just be one bigger position.',
+        'tut.coverage.ex': 'Hold <b>BTC LONG</b> and <b>BTC SHORT</b> together → if BTC drops, the short’s gain offsets the long’s loss (a hedge). But a second <b>BTC LONG</b> on top of an existing one is <b>blocked</b>.',
+        'tut.leverage.t': 'Leverage — a magnifier',
+        'tut.leverage.b':
+            'Leverage multiplies your position size <b>and your profit/loss percentage</b>. At <b>10×</b>, $100 controls a $1,000 position, so a 1% price move becomes a <b>10%</b> move on your money — in both directions. Here’s how $100 behaves on a ±2% price move:',
+        'tut.margin.t': 'Margin — your collateral',
+        'tut.margin.b':
+            'Margin is the money you <b>lock up</b> to open a position (position size ÷ leverage). <b>Isolated</b> margin risks only the amount on that one trade; <b>cross</b> margin can pull from your whole balance to keep it alive.',
+        'tut.margin.ex': 'A $1,000 position at <b>10×</b> needs <b>$100</b> margin. That $100 is what’s at stake on the trade.',
+        'tut.liquidation.t': 'Liquidation — the danger',
+        'tut.liquidation.b':
+            'If the price moves against you enough to use up your margin, the exchange <b>force-closes</b> the position and you <b>lose that margin</b>. Higher leverage puts the liquidation price <b>closer</b> to your entry, so smaller moves wipe you out.',
+        'tut.liquidation.ex': 'At <b>10×</b>, roughly a <b>−10%</b> move against you liquidates the position (you lose the full margin). At <b>20×</b>, only about <b>−5%</b>.',
+        'tut.tp.t': 'Take Profit (TP)',
+        'tut.tp.b': 'A <b>TP</b> order automatically <b>closes your trade at a profit</b> price you choose, locking in gains without watching the chart.',
+        'tut.tp.ex': 'Long at $60,000 with a TP at <b>$63,000</b> → it auto-closes for profit if price reaches $63,000.',
+        'tut.sl.t': 'Stop Loss (SL)',
+        'tut.sl.b':
+            'A <b>SL</b> order automatically <b>closes your trade at a loss</b> price you choose, capping how much you can lose. <b>Always use a stop</b> — it’s the single most important risk tool.',
+        'tut.sl.ex': 'Long at $60,000 with a SL at <b>$58,800</b> → it auto-closes to cap the loss if price drops there.',
+        'tut.rr.t': 'Reward : Risk (R:R)',
+        'tut.rr.b':
+            'R:R compares the <b>profit you aim for</b> to the <b>loss you risk</b>. Prefer trades with R:R of <b>1.5 or higher</b> so your winners outweigh your losers over time.',
+        'tut.rr.ex': 'Risking $20 to make $40 is an R:R of <b>2.0</b>. Even winning only ~40% of the time, you’d come out ahead.',
+        'tut.funding.t': 'Funding rate',
+        'tut.funding.b':
+            'On perpetual futures, longs and shorts pay each other a small <b>funding</b> fee every few hours to keep the contract price near the real (spot) price. Tiny per payment, but it adds up on leveraged positions held a long time.',
+        'tut.risk.t': 'The risks — please read',
+        'tut.risk.b':
+            'Leverage can <b>wipe out your money very fast</b>, and liquidation is permanent. Crypto is highly volatile. <b>Never risk more than you can afford to lose</b>, always set a stop loss, keep position sizes small, and <b>practice on Demo / testnet first</b>. Signals here are educational — <b>not financial advice</b>.',
         'header.market': 'market',
         'header.markets': 'markets',
         'tech.on': 'Technical mode on — click to hide RSI / MACD / EMA / Smart Money / levels',
@@ -115,6 +167,8 @@ export const translations: Record<Lang, Dict> = {
         'addAsset.errInvalid': '{sym} is not a USDT-M futures market',
 
         // App
+        'app.tabMarkets': 'Markets',
+        'app.tabPositions': 'Positions',
         'app.emptyTitle': 'Your watchlist is empty',
         'app.emptyBody': 'Add a futures pair above to start streaming live signals.',
         'app.footer':
@@ -202,6 +256,9 @@ export const translations: Record<Lang, Dict> = {
         'toast.openedTitle': 'Order opened',
         'toast.openedMsg': '{side} {sym} · {qty} @ market · {lev}×',
         'toast.failedTitle': 'Order failed',
+        'toast.dupTitle': 'Already open',
+        'toast.dupMsg': 'You already have a {side} {sym} position. Close it first, or open the opposite side to hedge.',
+        'toast.openFail': 'Could not open — check your available balance.',
         'toast.tpslTitle': 'TP/SL armed',
         'toast.tpslMsg': '{sym} — auto-closes at market while the app is open.',
         'toast.closedTitle': 'Position closed',
@@ -306,7 +363,7 @@ export const translations: Record<Lang, Dict> = {
         // API keys modal
         'keys.title': 'Binance API keys',
         'keys.warning':
-            'Real trading uses your own funds. Keys are stored only in this browser (localStorage) — never share this device. Use a key with Futures enabled but withdrawals DISABLED, and ideally an IP restriction.',
+            'Real trading uses your own funds. Keys are stored only in this browser (localStorage) — never share this device. Use a key with Futures enabled but withdrawals DISABLED.',
         'keys.apiKey': 'API key',
         'keys.secretKey': 'Secret key',
         'keys.testnet': 'Use Binance Futures Testnet (practice)',
@@ -432,6 +489,58 @@ export const translations: Record<Lang, Dict> = {
         'strategy.stochastic.b3': '<b>Filtro de tendencia</b> — solo desvanece la corrección, nunca la tendencia.',
         'strategy.stochastic.b4': '<b>Stop</b> — más allá del mínimo / máximo reciente.',
         'strategy.stochastic.b5': '<b>Objetivo</b> — la siguiente estructura, escalado por ATR.',
+        'tut.button': 'Tutorial',
+        'tut.title': 'Tutorial de trading',
+        'tut.subtitle': 'El trading de futuros explicado para principiantes — con ejemplos. Léelo antes de arriesgar dinero real.',
+        'tut.back': '← Volver al panel',
+        'tut.got': 'Entendido — volver a la app',
+        'tut.exLabel': 'Ejemplo',
+        'tut.note': 'Esta app es solo educativa. Nada aquí es asesoría financiera. Empieza siempre en Demo o testnet, y nunca operes dinero que no puedas permitirte perder.',
+        'tut.tbl.lev': 'Apalancamiento',
+        'tut.tbl.controls': '$100 controlan',
+        'tut.tbl.up': '+2% precio',
+        'tut.tbl.down': '−2% precio',
+        'tut.futures.t': '¿Qué es el trading de futuros?',
+        'tut.futures.b':
+            'Los futuros te permiten apostar a que el precio de una moneda <b>sube o baja</b> sin poseerla. Son contratos <b>perpetuos</b> (sin vencimiento) operados con <b>apalancamiento</b> — poder de compra prestado. Puedes ganar en ambas direcciones, pero el apalancamiento amplifica las <b>pérdidas</b> tanto como las ganancias.',
+        'tut.long.t': 'LONG — apostar a que el precio SUBE',
+        'tut.long.b': 'Ir <b>LONG</b> significa que ganas cuando el precio <b>sube</b>. Es como comprar ahora para vender más caro después.',
+        'tut.long.ex': 'Long 0.01 BTC a <b>$60,000</b>. Si BTC sube a <b>$63,000</b> (+5%) ganas unos <b>+$30</b>. Si baja a $57,000, pierdes unos <b>−$30</b>.',
+        'tut.short.t': 'SHORT — apostar a que el precio BAJA',
+        'tut.short.b': 'Ir <b>SHORT</b> significa que ganas cuando el precio <b>baja</b>. Vendes (prestado) ahora para recomprar más barato después — lo contrario de un long.',
+        'tut.short.ex': 'Short 0.01 BTC a <b>$60,000</b>. Si BTC baja a <b>$57,000</b> (−5%) ganas unos <b>+$30</b>. Si sube a $63,000, pierdes unos <b>−$30</b>.',
+        'tut.coverage.t': 'Cobertura (hedge) — mantener ambos lados',
+        'tut.coverage.b':
+            'Puedes mantener un <b>LONG y un SHORT de la misma moneda a la vez</b> — es el modo <b>hedge</b> o <b>cobertura</b>. Los dos se compensan, así que puedes proteger (cubrir) una posición abierta mientras decides tu próximo movimiento. Lo que <b>no</b> puedes hacer es abrir <b>dos operaciones en la misma dirección</b> sobre la misma moneda — eso sería simplemente una posición más grande.',
+        'tut.coverage.ex': 'Mantén <b>BTC LONG</b> y <b>BTC SHORT</b> a la vez → si BTC cae, la ganancia del short compensa la pérdida del long (una cobertura). Pero un segundo <b>BTC LONG</b> sobre uno existente queda <b>bloqueado</b>.',
+        'tut.leverage.t': 'Apalancamiento — un amplificador',
+        'tut.leverage.b':
+            'El apalancamiento multiplica el tamaño de tu posición <b>y tu porcentaje de ganancia/pérdida</b>. A <b>10×</b>, $100 controlan una posición de $1,000, así que un movimiento del 1% se convierte en un <b>10%</b> sobre tu dinero — en ambas direcciones. Así se comportan $100 ante un movimiento de ±2%:',
+        'tut.margin.t': 'Margen — tu garantía',
+        'tut.margin.b':
+            'El margen es el dinero que <b>bloqueas</b> para abrir una posición (tamaño de posición ÷ apalancamiento). El margen <b>aislado</b> arriesga solo lo de esa operación; el <b>cruzado</b> puede usar todo tu saldo para mantenerla viva.',
+        'tut.margin.ex': 'Una posición de $1,000 a <b>10×</b> necesita <b>$100</b> de margen. Esos $100 son lo que está en juego.',
+        'tut.liquidation.t': 'Liquidación — el peligro',
+        'tut.liquidation.b':
+            'Si el precio se mueve en tu contra lo suficiente como para agotar tu margen, el exchange <b>cierra la posición a la fuerza</b> y <b>pierdes ese margen</b>. Más apalancamiento acerca el precio de liquidación a tu entrada, así que movimientos pequeños te liquidan.',
+        'tut.liquidation.ex': 'A <b>10×</b>, aproximadamente un <b>−10%</b> en tu contra liquida la posición (pierdes todo el margen). A <b>20×</b>, solo un <b>−5%</b>.',
+        'tut.tp.t': 'Take Profit (TP)',
+        'tut.tp.b': 'Una orden <b>TP</b> <b>cierra tu operación con ganancia</b> en un precio que eliges, asegurando las ganancias sin mirar el gráfico.',
+        'tut.tp.ex': 'Long a $60,000 con TP en <b>$63,000</b> → se cierra solo con ganancia si el precio llega a $63,000.',
+        'tut.sl.t': 'Stop Loss (SL)',
+        'tut.sl.b':
+            'Una orden <b>SL</b> <b>cierra tu operación con pérdida</b> en un precio que eliges, limitando cuánto puedes perder. <b>Usa siempre un stop</b> — es la herramienta de riesgo más importante.',
+        'tut.sl.ex': 'Long a $60,000 con SL en <b>$58,800</b> → se cierra solo para limitar la pérdida si el precio cae ahí.',
+        'tut.rr.t': 'Beneficio : Riesgo (R:R)',
+        'tut.rr.b':
+            'El R:R compara la <b>ganancia que buscas</b> con la <b>pérdida que arriesgas</b>. Prefiere operaciones con R:R de <b>1.5 o más</b> para que tus ganancias superen a tus pérdidas con el tiempo.',
+        'tut.rr.ex': 'Arriesgar $20 para ganar $40 es un R:R de <b>2.0</b>. Incluso acertando solo ~40% de las veces, saldrías ganando.',
+        'tut.funding.t': 'Tasa de financiación (funding)',
+        'tut.funding.b':
+            'En los futuros perpetuos, longs y shorts se pagan entre sí una pequeña tasa de <b>financiación</b> cada pocas horas para mantener el precio del contrato cerca del precio real (spot). Es mínima por pago, pero se acumula en posiciones apalancadas mantenidas mucho tiempo.',
+        'tut.risk.t': 'Los riesgos — por favor léelo',
+        'tut.risk.b':
+            'El apalancamiento puede <b>arrasar tu dinero muy rápido</b>, y la liquidación es permanente. El cripto es muy volátil. <b>Nunca arriesgues más de lo que puedas permitirte perder</b>, pon siempre un stop loss, usa tamaños pequeños y <b>practica primero en Demo / testnet</b>. Las señales aquí son educativas — <b>no asesoría financiera</b>.',
         'header.market': 'mercado',
         'header.markets': 'mercados',
         'tech.on': 'Modo técnico activado — clic para ocultar RSI / MACD / EMA / Smart Money / niveles',
@@ -464,6 +573,8 @@ export const translations: Record<Lang, Dict> = {
         'addAsset.errInvalid': '{sym} no es un mercado de futuros USDT-M',
 
         // App
+        'app.tabMarkets': 'Mercados',
+        'app.tabPositions': 'Posiciones',
         'app.emptyTitle': 'Tu lista está vacía',
         'app.emptyBody': 'Agrega un par de futuros arriba para empezar a recibir señales en vivo.',
         'app.footer':
@@ -551,6 +662,9 @@ export const translations: Record<Lang, Dict> = {
         'toast.openedTitle': 'Orden abierta',
         'toast.openedMsg': '{side} {sym} · {qty} a mercado · {lev}×',
         'toast.failedTitle': 'Orden fallida',
+        'toast.dupTitle': 'Ya está abierta',
+        'toast.dupMsg': 'Ya tienes una posición {side} en {sym}. Ciérrala primero, o abre el lado opuesto para cubrirte.',
+        'toast.openFail': 'No se pudo abrir — revisa tu saldo disponible.',
         'toast.tpslTitle': 'TP/SL activado',
         'toast.tpslMsg': '{sym} — se cierra a mercado mientras la app esté abierta.',
         'toast.closedTitle': 'Posición cerrada',
@@ -656,7 +770,7 @@ export const translations: Record<Lang, Dict> = {
         // API keys modal
         'keys.title': 'Claves API de Binance',
         'keys.warning':
-            'El trading real usa tus propios fondos. Las claves se guardan solo en este navegador (localStorage) — no compartas este dispositivo. Usa una clave con Futuros activado pero retiros DESACTIVADOS, e idealmente con restricción de IP.',
+            'El trading real usa tus propios fondos. Las claves se guardan solo en este navegador (localStorage) — no compartas este dispositivo. Usa una clave con Futuros activado pero retiros DESACTIVADOS.',
         'keys.apiKey': 'Clave API',
         'keys.secretKey': 'Clave secreta',
         'keys.testnet': 'Usar Binance Futures Testnet (práctica)',

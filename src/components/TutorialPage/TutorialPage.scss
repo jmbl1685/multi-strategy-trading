@@ -1,0 +1,200 @@
+@use '../../styles/variables' as *;
+
+.tutpage {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    overflow-y: auto;
+    background: var(--bg, var(--surface));
+    color: var(--text);
+
+    &__bar {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: $space-3;
+        padding: $space-3 $space-4;
+        background: color-mix(in srgb, var(--surface) 85%, transparent);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid var(--border);
+    }
+
+    &__back {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-dim);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 7px 14px;
+        transition: all 0.15s ease;
+
+        &:hover {
+            color: var(--text);
+            border-color: var(--border-strong);
+        }
+    }
+
+    &__content {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: $space-4 $space-4 64px;
+    }
+
+    &__title {
+        margin: 12px 0 4px;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+    &__sub {
+        margin: 0 0 24px;
+        font-size: 14px;
+        line-height: 1.5;
+        color: var(--text-dim);
+    }
+
+    &__sec {
+        padding: $space-3 $space-4;
+        margin-bottom: 14px;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--border-strong);
+        border-radius: $radius-md;
+
+        &--long {
+            border-left-color: var(--long);
+        }
+        &--short {
+            border-left-color: var(--short);
+        }
+        &--risk {
+            border-left-color: var(--wait);
+            background: color-mix(in srgb, var(--wait) 8%, var(--surface-2));
+        }
+    }
+
+    &__sec-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0 0 8px;
+        font-size: 17px;
+        font-weight: 700;
+    }
+
+    &__ico {
+        font-size: 18px;
+    }
+
+    &__body {
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--text-dim);
+
+        b {
+            color: var(--text);
+        }
+    }
+
+    // ---- worked-example callout ----------------------------------------------
+    &__ex {
+        margin-top: 12px;
+        padding: 10px 12px;
+        background: var(--surface-3);
+        border-radius: $radius-sm;
+
+        p {
+            margin: 4px 0 0;
+            font-size: 13px;
+            line-height: 1.55;
+            color: var(--text-dim);
+
+            b {
+                color: var(--text);
+                font-family: $font-mono;
+            }
+        }
+    }
+
+    &__ex-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: var(--accent);
+    }
+
+    // ---- leverage table ------------------------------------------------------
+    &__table {
+        width: 100%;
+        margin-top: 12px;
+        border-collapse: collapse;
+        font-size: 13px;
+
+        th,
+        td {
+            padding: 7px 10px;
+            text-align: right;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-faint);
+            font-weight: 600;
+        }
+        td {
+            font-family: $font-mono;
+            color: var(--text-dim);
+        }
+        th:first-child,
+        td:first-child {
+            text-align: left;
+        }
+    }
+
+    &__lev {
+        font-weight: 700;
+        color: var(--accent) !important;
+    }
+
+    .is-up {
+        color: var(--long) !important;
+    }
+    .is-down {
+        color: var(--short) !important;
+    }
+
+    &__note {
+        margin: 20px 0 16px;
+        padding: 12px 14px;
+        font-size: 12px;
+        line-height: 1.55;
+        color: var(--text-dim);
+        background: var(--surface-2);
+        border: 1px dashed var(--border-strong);
+        border-radius: $radius-sm;
+    }
+
+    &__got {
+        display: block;
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        background: var(--accent);
+        border: none;
+        border-radius: $radius-md;
+
+        &:hover {
+            filter: brightness(1.05);
+        }
+    }
+}

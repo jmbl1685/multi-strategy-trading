@@ -9,6 +9,8 @@
 export interface PositionMeta {
     interval: string
     openedAt: number
+    /** Active strategy id when the position was opened (e.g. 'vbounce'). */
+    strategy?: string
 }
 
 type Store = Record<string, PositionMeta>
@@ -45,9 +47,9 @@ export const getPositionMeta = (symbol: string): PositionMeta | null => read()[s
 
 export const positionMetaSymbols = (): string[] => Object.keys(read())
 
-export const setPositionMeta = (symbol: string, interval: string, openedAt: number): void => {
+export const setPositionMeta = (symbol: string, interval: string, openedAt: number, strategy?: string): void => {
     const s = read()
-    s[symbol] = { interval, openedAt }
+    s[symbol] = { interval, openedAt, strategy }
     write(s)
 }
 
