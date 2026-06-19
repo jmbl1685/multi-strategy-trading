@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { Store } from '../utils/store'
 
 type Theme = 'light' | 'dark'
 
@@ -13,7 +14,7 @@ const ThemeContext = createContext<ThemeContextValue | null>(null)
 const STORAGE_KEY = 'v-bounce-theme'
 
 const getInitialTheme = (): Theme => {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = Store.getString(STORAGE_KEY)
     if (stored === 'light' || stored === 'dark') return stored
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     return prefersDark ? 'dark' : 'light'
@@ -24,7 +25,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme)
-        localStorage.setItem(STORAGE_KEY, theme)
+        Store.setString(STORAGE_KEY, theme)
     }, [theme])
 
     const toggle = () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))

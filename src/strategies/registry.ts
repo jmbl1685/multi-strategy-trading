@@ -1,4 +1,5 @@
 import type { StrategyKind } from './types'
+import { Store } from '../utils/store'
 
 export interface StrategyMeta {
     id: StrategyKind
@@ -29,12 +30,12 @@ let cached: StrategyKind | null = null
 
 export const getActiveStrategy = (): StrategyKind => {
     if (cached) return cached
-    const stored = localStorage.getItem(KEY) as StrategyKind | null
+    const stored = Store.getString(KEY) as StrategyKind | null
     cached = stored && IDS.includes(stored) ? stored : 'vbounce'
     return cached
 }
 
 export const setActiveStrategy = (id: StrategyKind): void => {
-    localStorage.setItem(KEY, id)
+    Store.setString(KEY, id)
     cached = id
 }

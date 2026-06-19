@@ -10,6 +10,7 @@ import { ClaudeMark } from './components/ClaudeMark/ClaudeMark'
 import { ToastHost } from './components/Toast/Toast'
 import { useI18n } from './context/I18nContext'
 import { usePaperTrading } from './context/PaperTradingContext'
+import { Store } from './utils/store'
 import './App.scss'
 
 const STORAGE_KEY = 'v-bounce-watchlist'
@@ -17,18 +18,10 @@ const INTERVAL_KEY = 'v-bounce-interval'
 const PANEL_KEY = 'v-bounce-panel-open'
 const DEFAULT_WATCHLIST = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT']
 
-const loadWatchlist = (): string[] => {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (raw) return JSON.parse(raw)
-    } catch {
-        /* fall through to default */
-    }
-    return DEFAULT_WATCHLIST
-}
+const loadWatchlist = (): string[] => Store.get<string[]>(STORAGE_KEY, DEFAULT_WATCHLIST)
 
 const loadInterval = (): Interval => {
-    const raw = localStorage.getItem(INTERVAL_KEY)
+    const raw = Store.getString(INTERVAL_KEY)
     const valid: Interval[] = ['1m', '5m', '15m', '1h', '4h']
     return valid.includes(raw as Interval) ? (raw as Interval) : '15m'
 }
@@ -38,20 +31,20 @@ export const App = () => {
     const { positions } = usePaperTrading()
     const [watchlist, setWatchlist] = useState<string[]>(loadWatchlist)
     const [interval, setInterval] = useState<Interval>(loadInterval)
-    const [panelOpen, setPanelOpen] = useState(() => localStorage.getItem(PANEL_KEY) !== 'false')
+    const [panelOpen, setPanelOpen] = useState(() => Store.getString(PANEL_KEY) !== 'false')
     const [showTutorial, setShowTutorial] = useState(false)
     const [view, setView] = useState<'markets' | 'positions'>('markets')
 
     useEffect(() => {
-        localStorage.setItem(PANEL_KEY, String(panelOpen))
+        Store.setString(PANEL_KEY, String(panelOpen))
     }, [panelOpen])
 
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(watchlist))
+        Store.set(STORAGE_KEY, watchlist)
     }, [watchlist])
 
     useEffect(() => {
-        localStorage.setItem(INTERVAL_KEY, interval)
+        Store.setString(INTERVAL_KEY, interval)
     }, [interval])
 
     const addAsset = (symbol: string) => {

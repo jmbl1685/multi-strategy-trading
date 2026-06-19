@@ -6,6 +6,8 @@
 // Positions opened before this existed — or outside the app — simply have no
 // entry here, and the panel shows no meta for them.
 
+import { Store } from '../utils/store'
+
 export interface PositionMeta {
     interval: string
     openedAt: number
@@ -13,26 +15,15 @@ export interface PositionMeta {
     strategy?: string
 }
 
-type Store = Record<string, PositionMeta>
+type Db = Record<string, PositionMeta>
 
 const KEY = 'v-bounce-real-posmeta'
 const listeners = new Set<() => void>()
 
-const read = (): Store => {
-    try {
-        const raw = localStorage.getItem(KEY)
-        return raw ? (JSON.parse(raw) as Store) : {}
-    } catch {
-        return {}
-    }
-}
+const read = (): Db => Store.get<Db>(KEY, {})
 
-const write = (s: Store) => {
-    try {
-        localStorage.setItem(KEY, JSON.stringify(s))
-    } catch {
-        /* ignore quota / serialization errors */
-    }
+const write = (s: Db) => {
+    Store.set(KEY, s)
     listeners.forEach((fn) => fn())
 }
 

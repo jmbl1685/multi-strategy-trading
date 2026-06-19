@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Credentials } from '../services/binanceTrade'
+import { Store } from '../utils/store'
 
 export type TradeMode = 'demo' | 'real'
 
@@ -19,35 +20,28 @@ const KEY = 'v-bounce-binance-keys'
 const MODE_KEY = 'v-bounce-trade-mode'
 
 const loadCreds = (): Credentials | null => {
-    try {
-        const raw = localStorage.getItem(KEY)
-        if (raw) {
-            const c = JSON.parse(raw)
-            if (c?.apiKey && c?.secretKey) return { apiKey: c.apiKey, secretKey: c.secretKey, testnet: !!c.testnet }
-        }
-    } catch {
-        /* ignore */
-    }
+    const c = Store.get<Partial<Credentials> | null>(KEY, null)
+    if (c?.apiKey && c?.secretKey) return { apiKey: c.apiKey, secretKey: c.secretKey, testnet: !!c.testnet }
     return null
 }
 
 export const TradingModeProvider = ({ children }: { children: ReactNode }) => {
     const [credentials, setCredentials] = useState<Credentials | null>(loadCreds)
     const [mode, setModeState] = useState<TradeMode>(() =>
-        localStorage.getItem(MODE_KEY) === 'real' && loadCreds() ? 'real' : 'demo'
+        Store.getString(MODE_KEY) === 'real' && loadCreds() ? 'real' : 'demo'
     )
 
     useEffect(() => {
-        localStorage.setItem(MODE_KEY, mode)
+        Store.setString(MODE_KEY, mode)
     }, [mode])
 
     const saveCredentials = useCallback((c: Credentials) => {
-        localStorage.setItem(KEY, JSON.stringify(c))
+        Store.set(KEY, c)
         setCredentials(c)
     }, [])
 
     const clearCredentials = useCallback(() => {
-        localStorage.removeItem(KEY)
+        Store.remove(KEY)
         setCredentials(null)
         setModeState('demo')
     }, [])

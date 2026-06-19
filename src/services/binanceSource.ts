@@ -1,3 +1,5 @@
+import { Store } from '../utils/store'
+
 export type SourceId = 'futures' | 'spot'
 
 export interface BinanceSource {
@@ -38,13 +40,13 @@ const PREF_KEY = 'v-bounce-source'
 
 /** The source the app should try first, biased by what last delivered data. */
 export const getPreferredSource = (): BinanceSource => {
-    const stored = localStorage.getItem(PREF_KEY)
+    const stored = Store.getString(PREF_KEY)
     return SOURCE_CHAIN.find((s) => s.id === stored) ?? SOURCE_CHAIN[0]
 }
 
 /** Persist the source that successfully delivered live frames. */
 export const rememberSource = (id: SourceId) => {
-    localStorage.setItem(PREF_KEY, id)
+    Store.setString(PREF_KEY, id)
 }
 
 /** The next source to try after `current`, or null when the chain is exhausted. */

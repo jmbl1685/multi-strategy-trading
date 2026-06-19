@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { DEFAULT_PARAMS, type StrategyParams } from '../indicators/params'
+import { Store } from '../utils/store'
 
 interface StrategyContextValue {
     /** Saved params for a symbol, or the defaults when none are saved. */
@@ -17,21 +18,13 @@ const STORAGE_KEY = 'v-bounce-strategy-params'
 
 type ParamMap = Record<string, StrategyParams>
 
-const load = (): ParamMap => {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY)
-        if (raw) return JSON.parse(raw)
-    } catch {
-        /* ignore */
-    }
-    return {}
-}
+const load = (): ParamMap => Store.get<ParamMap>(STORAGE_KEY, {})
 
 export const StrategyProvider = ({ children }: { children: ReactNode }) => {
     const [map, setMap] = useState<ParamMap>(load)
 
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(map))
+        Store.set(STORAGE_KEY, map)
     }, [map])
 
     const getParams = useCallback((symbol: string) => map[symbol] ?? DEFAULT_PARAMS, [map])

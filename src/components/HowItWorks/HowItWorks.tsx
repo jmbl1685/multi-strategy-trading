@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useI18n } from '../../context/I18nContext'
 import { useActiveStrategy } from '../../context/ActiveStrategyContext'
 import { StrategyInfoModal } from '../StrategyInfoModal/StrategyInfoModal'
+import { Store } from '../../utils/store'
 import './HowItWorks.scss'
 
 const STORAGE_KEY = 'v-bounce-howitworks-open'
@@ -10,12 +11,12 @@ const HISTORY_BARS = 1000
 export const HowItWorks = () => {
     const { t } = useI18n()
     const { strategy } = useActiveStrategy()
-    const [open, setOpen] = useState(() => localStorage.getItem(STORAGE_KEY) !== 'false')
+    const [open, setOpen] = useState(() => Store.getString(STORAGE_KEY) !== 'false')
     const [showExample, setShowExample] = useState(false)
 
     const toggle = () => {
         setOpen((o) => {
-            localStorage.setItem(STORAGE_KEY, String(!o))
+            Store.setString(STORAGE_KEY, String(!o))
             return !o
         })
     }

@@ -5,6 +5,7 @@
 
 import type { RealPosition } from './binanceTrade'
 import { getPositionMeta } from './realPositionMeta'
+import { Store } from '../utils/store'
 
 export interface RealClosed {
     id: string
@@ -25,21 +26,10 @@ const KEY = 'v-bounce-real-history'
 const CAP = 100
 const listeners = new Set<() => void>()
 
-const read = (): RealClosed[] => {
-    try {
-        const raw = localStorage.getItem(KEY)
-        return raw ? (JSON.parse(raw) as RealClosed[]) : []
-    } catch {
-        return []
-    }
-}
+const read = (): RealClosed[] => Store.get<RealClosed[]>(KEY, [])
 
 const write = (list: RealClosed[]) => {
-    try {
-        localStorage.setItem(KEY, JSON.stringify(list))
-    } catch {
-        /* ignore quota / serialization errors */
-    }
+    Store.set(KEY, list)
     listeners.forEach((fn) => fn())
 }
 

@@ -7,31 +7,22 @@
 //
 // Caveat: this only runs while the app is open — surfaced clearly in the UI.
 
+import { Store } from '../utils/store'
+
 export interface LocalTpSl {
     tp: number | null
     sl: number | null
 }
 
-type Store = Record<string, LocalTpSl>
+type Db = Record<string, LocalTpSl>
 
 const KEY = 'v-bounce-real-tpsl'
 const listeners = new Set<() => void>()
 
-const read = (): Store => {
-    try {
-        const raw = localStorage.getItem(KEY)
-        return raw ? (JSON.parse(raw) as Store) : {}
-    } catch {
-        return {}
-    }
-}
+const read = (): Db => Store.get<Db>(KEY, {})
 
-const write = (s: Store) => {
-    try {
-        localStorage.setItem(KEY, JSON.stringify(s))
-    } catch {
-        /* ignore quota / serialization errors */
-    }
+const write = (s: Db) => {
+    Store.set(KEY, s)
     listeners.forEach((fn) => fn())
 }
 

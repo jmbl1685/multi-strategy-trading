@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { Interval } from '../types'
+import { Store } from '../utils/store'
 
 export type Side = 'LONG' | 'SHORT'
 export type FeeMode = 'taker' | 'maker'
@@ -126,27 +127,13 @@ interface Persisted {
 }
 
 const load = (): Persisted => {
-    try {
-        const raw = localStorage.getItem(KEY)
-        if (raw) {
-            const p = JSON.parse(raw) as Persisted
-            return {
-                account: p.account ?? { balance: DEFAULT_START, realized: 0 },
-                positions: p.positions ?? [],
-                closed: p.closed ?? [],
-                defaults: { ...DEFAULTS, ...(p.defaults ?? {}) },
-                startBalance: p.startBalance ?? DEFAULT_START
-            }
-        }
-    } catch {
-        /* ignore */
-    }
+    const p = Store.get<Partial<Persisted>>(KEY, {})
     return {
-        account: { balance: DEFAULT_START, realized: 0 },
-        positions: [],
-        closed: [],
-        defaults: DEFAULTS,
-        startBalance: DEFAULT_START
+        account: p.account ?? { balance: DEFAULT_START, realized: 0 },
+        positions: p.positions ?? [],
+        closed: p.closed ?? [],
+        defaults: { ...DEFAULTS, ...(p.defaults ?? {}) },
+        startBalance: p.startBalance ?? DEFAULT_START
     }
 }
 
@@ -167,7 +154,7 @@ export const PaperTradingProvider = ({ children }: { children: ReactNode }) => {
     }, [positions])
 
     useEffect(() => {
-        localStorage.setItem(KEY, JSON.stringify({ account, positions, closed, defaults, startBalance }))
+        Store.set(KEY, { account, positions, closed, defaults, startBalance })
     }, [account, positions, closed, defaults, startBalance])
 
     const open: PaperTradingValue['open'] = useCallback(

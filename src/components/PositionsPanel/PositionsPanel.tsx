@@ -25,6 +25,7 @@ import { CredentialsModal } from '../CredentialsModal/CredentialsModal'
 import { ConfirmDialog } from '../ConfirmDialog/ConfirmDialog'
 import { PnlHistoryModal } from '../PnlHistoryModal/PnlHistoryModal'
 import { formatPrice, formatUsd, formatOpenedAt, formatAgo } from '../../utils/format'
+import { Store } from '../../utils/store'
 import './PositionsPanel.scss'
 
 interface PositionsPanelProps {
@@ -66,11 +67,11 @@ export const PositionsPanel = ({ open, onClose, layout = 'drawer' }: PositionsPa
     const [showHistory, setShowHistory] = useState(false)
     const [showKeys, setShowKeys] = useState(false)
     const [showPnl, setShowPnl] = useState(false)
-    const [tpslMode, setTpslMode] = useState<TpSlMode>(() => (localStorage.getItem('v-bounce-tpsl-mode') === 'usdt' ? 'usdt' : 'price'))
+    const [tpslMode, setTpslMode] = useState<TpSlMode>(() => (Store.getString('v-bounce-tpsl-mode') === 'usdt' ? 'usdt' : 'price'))
     const [bankroll, setBankroll] = useState(String(startBalance))
 
     useEffect(() => {
-        localStorage.setItem('v-bounce-tpsl-mode', tpslMode)
+        Store.setString('v-bounce-tpsl-mode', tpslMode)
     }, [tpslMode])
     useEffect(() => setBankroll(String(startBalance)), [startBalance])
 

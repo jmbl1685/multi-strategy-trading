@@ -4,6 +4,7 @@ import { useActiveStrategy } from '../../context/ActiveStrategyContext'
 import { STRATEGIES } from '../../strategies/registry'
 import type { StrategyKind } from '../../strategies/types'
 import { StrategyInfoModal } from '../StrategyInfoModal/StrategyInfoModal'
+import { Store } from '../../utils/store'
 import './StrategySelector.scss'
 
 const SEEN_KEY = 'v-bounce-strategy-seen'
@@ -14,12 +15,12 @@ export const StrategySelector = () => {
     const [open, setOpen] = useState(false)
     const [info, setInfo] = useState<StrategyKind | null>(null)
     // Pulse the selector once, until the user has opened it — a discoverability nudge.
-    const [seen, setSeen] = useState(() => localStorage.getItem(SEEN_KEY) === 'true')
+    const [seen, setSeen] = useState(() => Store.getString(SEEN_KEY) === 'true')
 
     const toggle = () => {
         if (!seen) {
             setSeen(true)
-            localStorage.setItem(SEEN_KEY, 'true')
+            Store.setString(SEEN_KEY, 'true')
         }
         setOpen((o) => !o)
     }

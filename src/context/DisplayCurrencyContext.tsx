@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
+import { Store } from '../utils/store'
 
 // A display-only currency overlay. The user names a currency (e.g. COP) and a
 // rate (1 USDT = `rate` units of it); when active, money amounts in the panel
@@ -26,13 +27,13 @@ const RATE_KEY = 'v-bounce-ccy-rate'
 const ACTIVE_KEY = 'v-bounce-ccy-active'
 
 export const DisplayCurrencyProvider = ({ children }: { children: ReactNode }) => {
-    const [code, setCodeRaw] = useState<string>(() => localStorage.getItem(CODE_KEY) ?? '')
-    const [rate, setRate] = useState<number>(() => Number(localStorage.getItem(RATE_KEY)) || 0)
-    const [active, setActive] = useState<boolean>(() => localStorage.getItem(ACTIVE_KEY) === 'on')
+    const [code, setCodeRaw] = useState<string>(() => Store.getString(CODE_KEY) ?? '')
+    const [rate, setRate] = useState<number>(() => Number(Store.getString(RATE_KEY)) || 0)
+    const [active, setActive] = useState<boolean>(() => Store.getString(ACTIVE_KEY) === 'on')
 
-    useEffect(() => localStorage.setItem(CODE_KEY, code), [code])
-    useEffect(() => localStorage.setItem(RATE_KEY, String(rate)), [rate])
-    useEffect(() => localStorage.setItem(ACTIVE_KEY, active ? 'on' : 'off'), [active])
+    useEffect(() => Store.setString(CODE_KEY, code), [code])
+    useEffect(() => Store.setString(RATE_KEY, String(rate)), [rate])
+    useEffect(() => Store.setString(ACTIVE_KEY, active ? 'on' : 'off'), [active])
 
     const setCode = (c: string) => setCodeRaw(c.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5))
 

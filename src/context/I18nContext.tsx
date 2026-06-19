@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { translations, type Lang } from '../i18n/translations'
+import { Store } from '../utils/store'
 
 type Vars = Record<string, string | number>
 
@@ -16,7 +17,7 @@ const I18nContext = createContext<I18nContextValue | null>(null)
 const STORAGE_KEY = 'v-bounce-lang'
 
 const getInitialLang = (): Lang => {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = Store.getString(STORAGE_KEY)
     if (stored === 'en' || stored === 'es') return stored
     return navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en'
 }
@@ -30,7 +31,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     const [lang, setLang] = useState<Lang>(getInitialLang)
 
     useEffect(() => {
-        localStorage.setItem(STORAGE_KEY, lang)
+        Store.setString(STORAGE_KEY, lang)
         document.documentElement.setAttribute('lang', lang)
     }, [lang])
 

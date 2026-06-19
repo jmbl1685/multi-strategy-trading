@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
+import { Store } from '../utils/store'
 
 type Permission = 'default' | 'granted' | 'denied' | 'unsupported'
 
@@ -39,15 +40,7 @@ const supported = typeof window !== 'undefined' && 'Notification' in window
 
 const DEFAULTS: Settings = { enabled: false, sound: true, minConfidence: 60, muted: [] }
 
-const load = (): Settings => {
-    try {
-        const raw = localStorage.getItem(KEY)
-        if (raw) return { ...DEFAULTS, ...JSON.parse(raw) }
-    } catch {
-        /* ignore */
-    }
-    return DEFAULTS
-}
+const load = (): Settings => ({ ...DEFAULTS, ...Store.get<Partial<Settings>>(KEY, {}) })
 
 // A short two-tone chime via Web Audio (no asset file needed).
 let audioCtx: AudioContext | null = null
@@ -98,7 +91,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     }, [])
 
     useEffect(() => {
-        localStorage.setItem(KEY, JSON.stringify(settings))
+        Store.set(KEY, settings)
     }, [settings])
 
     const enable = useCallback(async () => {
